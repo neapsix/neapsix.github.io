@@ -5,14 +5,14 @@ date:   2017-03-01 00:00:00 -0600
 categories: orfeo
 ---
 
->  Orfeo was a king,
->In Inglond an heighe lording,
->A stalworth man and hardi bo;   
->Large and curteys he was also.   
->His fader was comen of King Pluto,
->And his moder of King Juno,   
->That sum time were as godes yhold
->For aventours that thai dede and told.
+>  Orfeo was a king,  
+>In Inglond an heighe lording,  
+>A stalworth man and hardi bo;  
+>Large and curteys he was also.  
+>His fader was comen of King Pluto,  
+>And his moder of King Juno,  
+>That sum time were as godes yhold  
+>For aventours that thai dede and told.  
 
 _Sir Orfeo_, Anne Laskaya and Eve Salisbury (eds.), The Middle English Breton Lays (Kalamazoo: Medieval Institute Publications, 1995). http://d.lib.rochester.edu/teams/text/laskaya- and-salisbury-middle-english-breton-lays-sir-orfeo.
 
