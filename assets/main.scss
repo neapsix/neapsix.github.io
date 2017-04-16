@@ -1,0 +1,75 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+@charset "utf-8";
+
+@import "nord";
+
+// Our variables
+$base-font-family: "EB Garamond", serif;
+$base-font-size:   20px;
+$base-line-height: 1.25;
+
+//$background-color: $nord6 //#ECEFF4;
+$background-color: $nord5; //#E5E9F0;
+$brand-color: $nord7; //#8FBCBB;
+$comp-color: #FFDDC2;
+
+$grey-color: lighten($nord3, 10%); //modified nord from original
+$grey-color-light: #ffffff;
+$grey-color-dark:  $nord3; //#4C566A;
+
+@import "minima";
+
+/**
+ * Site header
+ */
+.site-header {
+  border-top: 0px solid $grey-color-dark;
+  border-bottom: 1px solid $grey-color-light;
+  min-height: 64px;
+
+  // Positioning context for the mobile navigation icon
+  position: relative;
+}
+
+.site-title {
+  font-size: 42px;
+  line-height: 64px;
+
+  &,
+  &:hover {
+    text-decoration: none;
+  }
+  &:visited {
+    color: $brand-color;
+  }
+}
+
+.site-nav {
+  line-height: 64px;
+
+  .page-link {
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+
+/**
+ * Site footer
+ */
+.footer-col-1 {
+  width: -webkit-calc(45% - (#{$spacing-unit} / 2));
+  width:         calc(45% - (#{$spacing-unit} / 2));
+}
+
+.footer-col-2 {
+  width: -webkit-calc(37% - (#{$spacing-unit} / 2));
+  width:         calc(37% - (#{$spacing-unit} / 2));
+}
+.footer-col-3 {
+  width: -webkit-calc(18% - (#{$spacing-unit} / 2));
+  width:         calc(18% - (#{$spacing-unit} / 2));
+}
