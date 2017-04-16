@@ -127,3 +127,14 @@ blockquote {
   width: -webkit-calc(20% - (#{$spacing-unit} / 2));
   width:         calc(20% - (#{$spacing-unit} / 2));
 }
+
+// no changes to the footer on mobile, but we have to repeat it because we overrode it
+@include media-query($on-palm) {
+  //undo what we did in column 2
+  text-align: left;
+  .footer-col {
+    float: none;
+    width: -webkit-calc(100% - (#{$spacing-unit} / 2));
+    width:         calc(100% - (#{$spacing-unit} / 2));
+  }
+}
