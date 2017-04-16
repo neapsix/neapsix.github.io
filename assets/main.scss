@@ -5,12 +5,11 @@
 
 @import "nord";
 
-// Our variables
-$base-font-family: "EB Garamond", serif;
+// change fonts, font size, line spacing and colors
+$base-font-family: "EB Garamond", "Times New Roman", Times, serif;
 $base-font-size:   20px;
-$base-line-height: 1.25;
+//$base-line-height: 1.25;
 
-//$background-color: $nord6 //#ECEFF4;
 $background-color: $nord5; //#E5E9F0;
 $brand-color: $nord7; //#8FBCBB;
 $comp-color: #FFDDC2;
@@ -22,8 +21,47 @@ $grey-color-dark:  $nord3; //#4C566A;
 @import "minima";
 
 /**
- * Site header
- */
+*   Overrides for css not part of the minima theme
+*/
+// center the newer posts | page number | older posts links on the home page
+.pagination {
+  text-align: center;
+}
+
+/**
+*   Overrides for minima/_base.scss
+*/
+
+//  LINKS
+// change color for visited and hovered links
+a {
+  color: $brand-color;
+  text-decoration: none;
+
+  &:visited {
+    color: $brand-color;
+  }
+
+  &:hover {
+    color: $brand-color;
+    text-decoration: underline;
+  }
+}
+
+//  BLOCKQUOTES
+// change font size and remove italics for block quotes
+blockquote {
+  font-size: $base-font-size;
+  letter-spacing: 0px;
+  font-style: normal;
+}
+
+/**
+*   Overrides for minima/_layout.scss
+*/
+
+//  SITE HEADER
+//change header size and borders
 .site-header {
   border-top: 0px solid $grey-color-dark;
   border-bottom: 1px solid $grey-color-light;
@@ -33,9 +71,12 @@ $grey-color-dark:  $nord3; //#4C566A;
   position: relative;
 }
 
+//make title larger
+//remove the underline and color when hovering over a link
 .site-title {
   font-size: 42px;
   line-height: 64px;
+  color: $brand-color;
 
   &,
   &:hover {
@@ -46,6 +87,8 @@ $grey-color-dark:  $nord3; //#4C566A;
   }
 }
 
+//adjust navigation position for the larger header
+//remove the underline and color when hovering over a link
 .site-nav {
   line-height: 64px;
 
@@ -57,9 +100,8 @@ $grey-color-dark:  $nord3; //#4C566A;
 }
 
 
-/**
- * Site footer
- */
+//  SITE FOOTER
+// adjust column width
 .footer-col-1 {
   width: -webkit-calc(45% - (#{$spacing-unit} / 2));
   width:         calc(45% - (#{$spacing-unit} / 2));
