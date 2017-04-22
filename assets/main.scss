@@ -8,9 +8,7 @@
 // change fonts, font size, line spacing and colors
 $base-font-family: "EB Garamond", "Times New Roman", Times, serif;
 $base-font-size:   22px;
-@include media-query($on-palm) {
-  $base-font-size: 20px;
-}
+
 //$base-line-height: 1.25;
 
 $background-color: $nord5; //#E5E9F0;
@@ -139,9 +137,10 @@ blockquote {
 
 // no changes to the footer on mobile, but we have to repeat it because we overrode it
 @include media-query($on-palm) {
-  //undo what we did in column 2
-  text-align: left;
+
   .footer-col {
+    //undo what we did in column 2
+    text-align: left;
     float: none;
     width: -webkit-calc(100% - (#{$spacing-unit} / 2));
     width:         calc(100% - (#{$spacing-unit} / 2));
