@@ -7,7 +7,7 @@
 
 // change fonts, font size, line spacing and colors
 $base-font-family: "EB Garamond", "Times New Roman", Times, serif;
-$base-font-size:   20px;
+$base-font-size:   22px;
 //$base-line-height: 1.25;
 
 $background-color: $nord5; //#E5E9F0;
@@ -17,6 +17,12 @@ $comp-color: #FFDDC2;
 $grey-color: lighten($nord3, 10%); //modified nord from original
 $grey-color-light: #ffffff;
 $grey-color-dark:  $nord3; //#4C566A;
+
+//change width of content area -- default is hard to read
+$content-width:    650px;
+
+$on-palm:          600px;
+$on-laptop:        650px;
 
 @import "minima";
 
@@ -115,17 +121,17 @@ blockquote {
 
 // adjust column width
 .footer-col-1 {
-  width: -webkit-calc(20% - (#{$spacing-unit} / 2));
-  width:         calc(20% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(25% - (#{$spacing-unit} / 2));
+  width:         calc(25% - (#{$spacing-unit} / 2));
 }
 .footer-col-2 {
   text-align: center;
-  width: -webkit-calc(60% - (#{$spacing-unit} / 2));
-  width:         calc(60% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(50% - (#{$spacing-unit} / 2));
+  width:         calc(50% - (#{$spacing-unit} / 2));
 }
 .footer-col-3 {
-  width: -webkit-calc(20% - (#{$spacing-unit} / 2));
-  width:         calc(20% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(25% - (#{$spacing-unit} / 2));
+  width:         calc(25% - (#{$spacing-unit} / 2));
 }
 
 // no changes to the footer on mobile, but we have to repeat it because we overrode it
@@ -137,4 +143,14 @@ blockquote {
     width: -webkit-calc(100% - (#{$spacing-unit} / 2));
     width:         calc(100% - (#{$spacing-unit} / 2));
   }
+}
+
+// define post-link-large class - this is used only in _layouts/home.html
+// same as post-link but with a larger font size
+.post-link-large {
+  display: block;
+
+  font-size: 36px;
+  letter-spacing: -1px;
+  line-height: 1;
 }
