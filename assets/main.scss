@@ -110,7 +110,7 @@ blockquote {
 //  SITE FOOTER
 // change font colors and sizes
 .footer-heading {
-  font-size: 22px;
+  font-size: 24px;
   color: $grey-color-dark;
   margin-bottom: $spacing-unit / 8;
 }
@@ -141,6 +141,7 @@ blockquote {
   .footer-col {
     //undo what we did in column 2
     text-align: left;
+
     float: none;
     width: -webkit-calc(100% - (#{$spacing-unit} / 2));
     width:         calc(100% - (#{$spacing-unit} / 2));
