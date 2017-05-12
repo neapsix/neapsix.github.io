@@ -155,6 +155,8 @@ blockquote {
     float: none;
     width: -webkit-calc(100% - (#{$spacing-unit} / 2));
     width:         calc(100% - (#{$spacing-unit} / 2));
+
+    line-height: 18px;
   }
 }
 
