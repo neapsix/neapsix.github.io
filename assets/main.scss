@@ -14,8 +14,7 @@ $base-font-size:   18px;
 //$base-line-height: 1.25;
 
 $background-color: $nord5; //#E5E9F0;
-$brand-color: $nord7; //#8FBCBB;
-$comp-color: #FFDDC2;
+$brand-color: $nord9; //#81A1C1;
 
 $grey-color: lighten($nord3, 10%); //modified nord from original
 $grey-color-light: #ffffff;
@@ -124,24 +123,24 @@ blockquote {
 }
 
 .footer-col-wrapper {
-  font-family: $display-font-family;
-  font-size: 16px;
-  color: $grey-color;
+  //font-family: $display-font-family;
+  //font-size: 16px;
+  color: $grey-color-dark;
 }
 
 // adjust column width
 .footer-col-1 {
-  width: -webkit-calc(25% - (#{$spacing-unit} / 2));
-  width:         calc(25% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(27% - (#{$spacing-unit} / 2));
+  width:         calc(27% - (#{$spacing-unit} / 2));
 }
 .footer-col-2 {
   text-align: center;
-  width: -webkit-calc(50% - (#{$spacing-unit} / 2));
-  width:         calc(50% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(46% - (#{$spacing-unit} / 2));
+  width:         calc(46% - (#{$spacing-unit} / 2));
 }
 .footer-col-3 {
-  width: -webkit-calc(25% - (#{$spacing-unit} / 2));
-  width:         calc(25% - (#{$spacing-unit} / 2));
+  width: -webkit-calc(27% - (#{$spacing-unit} / 2));
+  width:         calc(27% - (#{$spacing-unit} / 2));
 }
 
 // no changes to the footer on mobile, but we have to repeat it because we overrode it
