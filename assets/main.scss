@@ -31,9 +31,32 @@ $on-laptop:        650px;
 /**
 *   Overrides for css not part of the minima theme
 */
-// center the newer posts | page number | older posts links on the home page
+// newer posts | page number | older posts links on the home page
+// three-column layout
 .pagination {
+  margin-left: -$spacing-unit / 2;
+  @extend %clearfix;
+}
+
+.pagination-col {
+  float: left;
+  margin-bottom: -$spacing-unit / 4;
+  padding-left: $spacing-unit / 2;
+}
+
+.pagination-col-1 {
+  width: -webkit-calc(33% - (#{$spacing-unit} / 2));
+  width:         calc(33% - (#{$spacing-unit} / 2));
+}
+.pagination-col-2 {
   text-align: center;
+  width: -webkit-calc(34% - (#{$spacing-unit} / 2));
+  width:         calc(34% - (#{$spacing-unit} / 2));
+}
+.pagination-col-3 {
+  text-align: right;
+  width: -webkit-calc(33% - (#{$spacing-unit} / 2));
+  width:         calc(33% - (#{$spacing-unit} / 2));
 }
 
 /**

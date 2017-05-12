@@ -3,6 +3,7 @@ layout: page
 title: about
 permalink: /about/
 ---
+subscribe [via RSS](../feed.xml)
 
 This site is built using Jekyll and hosted on GitHub Pages.
 
