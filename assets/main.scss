@@ -42,6 +42,10 @@ $on-laptop:        650px;
   float: left;
   margin-bottom: -$spacing-unit / 4;
   padding-left: $spacing-unit / 2;
+  
+  @include media-query($on-palm) {
+    font-size: $base-font-size *.8
+  }
 }
 
 .pagination-col-1 {
