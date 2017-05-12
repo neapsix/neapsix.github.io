@@ -6,8 +6,10 @@
 @import "nord";
 
 // change fonts, font size, line spacing and colors
-$base-font-family: "EB Garamond", "Times New Roman", Times, serif;
-$base-font-size:   22px;
+$display-font-family: "EB Garamond", "Times New Roman", Times, serif;
+$display-font-size:   24px;
+$base-font-family: 'Source Serif Pro', "Times New Roman", Times, serif;
+$base-font-size:   18px;
 
 //$base-line-height: 1.25;
 
@@ -79,8 +81,10 @@ blockquote {
 }
 
 //make title larger
+//use the display font in the title
 //remove the underline and color when hovering over a link
 .site-title {
+  font-family: $display-font-family;
   font-size: 42px;
   line-height: 64px;
   color: $brand-color;
@@ -94,9 +98,12 @@ blockquote {
   }
 }
 
+//use the display font for the nav
 //adjust navigation position for the larger header
 //remove the underline and color when hovering over a link
 .site-nav {
+  font-family: $display-font-family;
+  font-size: $display-font-size;
   line-height: 64px;
 
   .page-link {
@@ -108,14 +115,16 @@ blockquote {
 
 
 //  SITE FOOTER
-// change font colors and sizes
+// use the display font, change font colors and sizes
 .footer-heading {
-  font-size: 24px;
+  font-family: $display-font-family;
+  font-size: $display-font-size;
   color: $grey-color-dark;
   margin-bottom: $spacing-unit / 8;
 }
 
 .footer-col-wrapper {
+  font-family: $display-font-family;
   font-size: 16px;
   color: $grey-color;
 }
@@ -149,11 +158,22 @@ blockquote {
 }
 
 // define post-link-large class - this is used only in _layouts/home.html
-// same as post-link but with a larger font size
+// same as post-link but with the display font and a larger font size
 .post-link-large {
   display: block;
 
+  font-family: $display-font-family;
   font-size: 36px;
   letter-spacing: -1px;
   line-height: 1;
+}
+
+// use the display font for post titles and regular post links
+.post-link {
+  font-family: $display-font-family;
+}
+
+.post-title {
+  font-family: $display-font-family;
+  font-size: 36px;
 }
