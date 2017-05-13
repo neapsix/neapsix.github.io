@@ -26,6 +26,9 @@ github_repo: neapsix.github.io
 paginate: 5
 paginate_path: "/blog/page:num"
 
+collections:
+  - comments
+
 # Build settings
 markdown: kramdown
 theme: minima

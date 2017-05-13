@@ -1,0 +1,59 @@
+---
+layout: default
+---
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">{{ page.title | escape }}</h1>
+    <p class="post-meta"><time datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">{{ page.date | date: "%b %-d, %Y" }}</time>{% if page.author %} • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ page.author }}</span></span>{% endif %}</p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    {{ content }}
+  </div>
+
+  <div id="comments">
+
+		<h1>Comments</h1>
+  	{% for c in site.comments %}
+      {% if c.post_id == page.id %}
+    		<div class="comment">
+          <p>
+            <span class="comment-header">{{ c.name }}</br></span>
+            <span class="comment-date">{{ c.date | date: "%b %-d, %Y %I:%M %p" }}</span>
+          </p>
+          <p>
+            {{c.content | newline_to_br}}
+          </p>
+    		</div>
+      {% endif %}
+  	{% endfor %}
+
+    <h1>Post a comment</h1>
+
+    <form class="comment-form" method="POST" action="https://www.formingo.co/submit/dev_null">
+        <input type="hidden" name="__redirect" value="https://neapsix.github.io{{page.url}}" />
+        <input type="hidden" name="__subject" value="New comment"/>
+        <input type="hidden" name="post_id" value="{{page.id}}"/>
+        <fieldset>
+          <label for="name">Name: *</label><br>
+          <input class="comment-field" type="text" name="name" id="name" required><br>
+        </fieldset>
+        <fieldset>
+          <label for="__replyto">Email: *</label><br>
+          <input type="email" name="__replyto" id="__replyto" required>
+        </fieldset>
+        <fieldset>
+          <label for="comment">Comment:</label><br>
+          <textarea name="comment" rows="8" cols="60" id="comment" required></textarea></br>
+        </fieldset>
+        <fieldset>
+          <input type="submit" value="Submit">
+        </fieldset>
+        <fieldset>
+          <legend>Comments are held for review. Email addresses are not published.</legend>
+        </fieldset>
+    </form>
+  </div>
+
+</article>

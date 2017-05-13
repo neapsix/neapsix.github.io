@@ -16,6 +16,9 @@ $base-font-size:   18px;
 $background-color: $nord5; //#E5E9F0;
 $brand-color: $nord9; //#81A1C1;
 
+$callout-background-color: #eef; //same as default code block color
+$validate-error-color: $nord11;
+
 $grey-color: lighten($nord3, 10%); //modified nord from original
 $grey-color-light: #ffffff;
 $grey-color-dark:  $nord3; //#4C566A;
@@ -42,7 +45,7 @@ $on-laptop:        650px;
   float: left;
   margin-bottom: -$spacing-unit / 4;
   padding-left: $spacing-unit / 2;
-  
+
   @include media-query($on-palm) {
     font-size: $base-font-size *.8
   }
@@ -61,6 +64,51 @@ $on-laptop:        650px;
   text-align: right;
   width: -webkit-calc(33% - (#{$spacing-unit} / 2));
   width:         calc(33% - (#{$spacing-unit} / 2));
+}
+
+.comment {
+  .comment-header {
+    font-family: $display-font-family;
+    font-size: $display-font-size;
+  }
+
+  .comment-date {
+    color: $grey-color;
+    font-size: 15px;
+  }
+}
+
+// comment form on posts
+.comment-form {
+  margin-left: -$spacing-unit / 2;
+  fieldset {
+    //display: block;
+    //margin-left: 2px;
+    //margin-right: 2px;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    //padding-left: 0.75em;
+    //padding-right: 0.75em;
+    border: 0;
+  }
+
+  input, textarea {
+    border: 1px solid $grey-color-light;
+    border-radius: 3px;
+    background-color: $callout-background-color;
+
+    &:focus {
+      border: 1px solid $brand-color;
+      border-radius: 4px;
+    }
+  }
+
+  legend {
+    font-family: $base-font-family;
+    font-size: 15px;
+    color: $grey-color-dark;
+  }
+
 }
 
 /**
