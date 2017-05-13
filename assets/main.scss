@@ -66,10 +66,17 @@ $on-laptop:        650px;
   width:         calc(33% - (#{$spacing-unit} / 2));
 }
 
+// sections at the bottom of the post - Comments, post a comment
+
+.post-section-title {
+  font-family: $display-font-family;
+  font-size: $display-font-size;
+}
+
+// comments list for each post
+
 .comment {
   .comment-header {
-    font-family: $display-font-family;
-    font-size: $display-font-size;
   }
 
   .comment-date {
@@ -148,7 +155,7 @@ blockquote {
 .site-header {
   border-top: 0px solid $grey-color-dark;
   border-bottom: 1px solid $grey-color-light;
-  min-height: 64px;
+  min-height: 72px;
 
   // Positioning context for the mobile navigation icon
   position: relative;
@@ -159,8 +166,8 @@ blockquote {
 //remove the underline and color when hovering over a link
 .site-title {
   font-family: $display-font-family;
-  font-size: 42px;
-  line-height: 64px;
+  font-size: 48px; //was 42px font and 64 - increased so title is twice h1
+  line-height: 72px;
   color: $brand-color;
 
   &,
@@ -178,7 +185,7 @@ blockquote {
 .site-nav {
   font-family: $display-font-family;
   font-size: $display-font-size;
-  line-height: 64px;
+  line-height: 72px;
 
   .page-link {
     &:hover {
@@ -198,9 +205,7 @@ blockquote {
 }
 
 .footer-col-wrapper {
-  //font-family: $display-font-family;
-  //font-size: 16px;
-  font-family: $base-font-family;
+  font-family: $base-font-family; //was 16 and dispaly font
   font-size: 15px;
   color: $grey-color-dark;
 }
@@ -247,6 +252,7 @@ blockquote {
 // use the display font for post titles and regular post links
 .post-link {
   font-family: $display-font-family;
+  font-size: $display-font-size;
 }
 
 .post-title {
