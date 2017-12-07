@@ -13,8 +13,10 @@ $base-font-size:   18px;
 
 //$base-line-height: 1.25;
 
-$background-color: $nord5; //#E5E9F0;
-$brand-color: $nord9; //#81A1C1;
+//$background-color: $nord5; //#E5E9F0;
+//$brand-color: $nord9; //#81A1C1;
+$background-color: $nord6;
+$brand-color: $nord3;
 
 $grey-color: lighten($nord3, 10%); //modified nord from original
 $grey-color-light: #ffffff;
@@ -42,7 +44,7 @@ $on-laptop:        650px;
   float: left;
   margin-bottom: -$spacing-unit / 4;
   padding-left: $spacing-unit / 2;
-  
+
   @include media-query($on-palm) {
     font-size: $base-font-size *.8
   }
@@ -196,11 +198,8 @@ blockquote {
   line-height: 1;
 }
 
-// use the display font for post titles and regular post links
-.post-link {
-  font-family: $display-font-family;
-}
 
+// use the display font for post titles
 .post-title {
   font-family: $display-font-family;
   font-size: 36px;

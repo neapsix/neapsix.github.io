@@ -21,9 +21,9 @@
       <!-- removed the Github link, added email and twitter on one line -->
       <div class="footer-col footer-col-2">
         <p>
-          <a href="mailto:someone@domain.com">contact me</a>
+          <a href="mailto:someone@domain.com">contact me</a> or
           {% if site.twitter_username %}
-            <span>or tweet at me: {% include icon-twitter.html username=site.twitter_username %}</span>
+            <a href="https://twitter.com/{{ site.twitter_username }}">tweet at me</a>
           {% endif %}
         </p>
       </div>
