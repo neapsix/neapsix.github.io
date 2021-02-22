@@ -1,0 +1,34 @@
+languageCode = "en-us"
+title = "neap space"
+theme = "etch"
+summaryLength = 32
+enableInlineShortcodes = true
+pygmentsCodefences = true
+pygmentsUseClasses = true
+
+[params]
+    copyright = "Copyright © 2021 Benjamin Spiegel"
+    dark = "auto"
+    highlight = true
+
+[menu]
+    [[menu.main]]
+        identifier = "posts"
+        name = "posts"
+        title = "posts"
+        url = "/"
+        weight = 10
+
+    [[menu.main]]
+        identifier = "about"
+        name = "about"
+        title = "about"
+        url = "/about/"
+        weight = 20
+
+[permalinks]
+    posts = "/:title/"
+
+#[markup.goldmark.renderer]
+#    Allows HTML in Markdown
+#    unsafe = true
