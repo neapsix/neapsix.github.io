@@ -3,8 +3,11 @@ title = "neap space"
 theme = "etch"
 summaryLength = 32
 enableInlineShortcodes = true
-pygmentsCodefences = true
-pygmentsUseClasses = true
+pygmentsCodeFences = true
+
+[markup]
+    [markup.highlight]
+        style = "dracula"
 
 [params]
     copyright = "Copyright © 2021 Benjamin Spiegel"
@@ -29,6 +32,6 @@ pygmentsUseClasses = true
 [permalinks]
     posts = "/:title/"
 
-#[markup.goldmark.renderer]
-#    Allows HTML in Markdown
-#    unsafe = true
+[markup.goldmark.renderer]
+    #Allows HTML in Markdown
+    unsafe = true
