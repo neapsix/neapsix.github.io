@@ -3,10 +3,10 @@ title = "neap space"
 theme = "etch"
 summaryLength = 32
 enableInlineShortcodes = true
-pygmentsCodeFences = true
 
 [markup]
     [markup.highlight]
+        codeFences = true
         style = "dracula"
 
 [params]
@@ -30,7 +30,7 @@ pygmentsCodeFences = true
         weight = 20
 
 [permalinks]
-    posts = "/:title/"
+    posts = "/:year/:month/:title/"
 
 [markup.goldmark.renderer]
     #Allows HTML in Markdown
