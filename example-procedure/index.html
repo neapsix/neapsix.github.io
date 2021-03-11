@@ -5,7 +5,7 @@
   <span style=color:#6272a4># Define entry points a user hits when going to http://&lt;domain&gt; and https://&lt;domain&gt;</span>
   - <span style=color:#f1fa8c>&#34;--entrypoints.web.address=:80&#34;</span>
   - <span style=color:#f1fa8c>&#34;--entrypoints.websecure.address=:443&#34;</span>
-</code></pre></div></li><li><p>Go to the definition for your container and add the following metadata. Replace <code>&lt;application></code> with the name of your application.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>labels</span>:
+</code></pre></div></li><li><p>Go to the definition for your application&rsquo;s container, and add the following metadata. Replace <code>&lt;application></code> with the name of your application.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>labels</span>:
   <span style=color:#6272a4># Enable resolution on the internal domain with traefik</span>
   - <span style=color:#f1fa8c>&#34;traefik.enable=true&#34;</span>
   - <span style=color:#f1fa8c>&#34;traefik.http.routers.testsite.rule=Host(`&lt;application&gt;.apps.neap.space`)&#34;</span>
