@@ -8,17 +8,19 @@ To make your web application available to users both on the internal network and
 
 Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain. These steps apply only to applications in a container runtime such as Docker or Podman that you configure using Docker Compose.
 
->**Prerequisites:**
+>#### Prerequisites:
+>
 >For both internal and external access:
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
 >* Wireguard installed on the container host.
->* A container for Traefik on the same host as your application. 
+>* A container for Traefik on the same host as your application.
+> 
 >For external access:
 >* Wireguard installed on the container host.
 >* For your application, bridge networking enabled and ports published on the container host.
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
 
->**Why use two different subdomains?**
+>#### Why use two different subdomains?
 >
 >The neap.space network uses this configuration to avoid creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another specified DNS zone.
 >
