@@ -9,11 +9,11 @@ To make your web application available to users both on the internal network and
 Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain. These steps apply only to applications in a container runtime such as Docker or Podman that you configure using Docker Compose.
 
 >**Prerequisites:**
-For both internal and external access:
+>For both internal and external access:
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
 >* Wireguard installed on the container host.
 >* A container for Traefik on the same host as your application. 
-For external access:
+>For external access:
 >* Wireguard installed on the container host.
 >* For your application, bridge networking enabled and ports published on the container host.
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
@@ -24,13 +24,6 @@ For external access:
 >
 >
 >While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request goes to a different DNS server than you expect. For example, applications like Chrome might prioritize a certain public DNS server over the local one, causing internal requests to be resolved as though they were from the public internet.
-
->**Prerequisites:**
->* An authorized SSH key and sudo access on the proxy.neap.space server.
->* Wireguard installed on the container host.
->* A container for your application
->* For external access, bridge networking enabled and an open port published on the container host.
->* A container for Traefik on the container host.
 
 ## Let Users Access the Application from Your Network
 First, make sure the local DNS server has an entry that points the application's internal URL to your container host. You might have a specific entry for `<application>.apps.neap.space` or a wildcard entry for `*.apps.neap.space`.
