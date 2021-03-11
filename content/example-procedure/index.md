@@ -44,7 +44,7 @@ Then, configure Traefik on the container host to match requests to `<application
       - "--entrypoints.websecure.address=:443"
     ```
 
-1. Go to the definition for your container and add the following metadata. Replace `<application>` with the name of your application.
+1. Go to the definition for your application's container, and add the following metadata. Replace `<application>` with the name of your application.
 
     ```yaml
     labels:
