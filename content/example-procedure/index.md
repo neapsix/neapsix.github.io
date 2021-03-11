@@ -13,13 +13,9 @@ To make your web application available to users both on the internal network and
 >
 >While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request goes to a different DNS server than you expect. For example, applications like Chrome might prioritize a certain public DNS server over the local one, causing internal requests to be resolved as though they were from the public internet.
 
-Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain.
+Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain. These steps apply only to applications in a container runtime such as Docker or Podman that you configure using Docker Compose.
 
 >**Prerequisites:**
->
->These steps apply only to container applications using a runtime such as Docker or Podman and assume you're using Docker Compose to configure and deploy your containers.
->
->You need:
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
 >* Wireguard installed on the container host.
 >* A container for your application
