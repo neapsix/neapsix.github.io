@@ -6,14 +6,24 @@ To make your web application available to users both on the internal network and
 * `<your application>.apps.neap.space`, which is resolved only on the internal network.
 * `<your application>.proxy.neap.space`, which is resolved over the public internet.
 
+Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain. These steps apply only to applications in a container runtime such as Docker or Podman that you configure using Docker Compose.
+
+>**Prerequisites:**
+For both internal and external access:
+>* An authorized SSH key and sudo access on the proxy.neap.space server.
+>* Wireguard installed on the container host.
+>* A container for Traefik on the same host as your application. 
+For external access:
+>* Wireguard installed on the container host.
+>* For your application, bridge networking enabled and ports published on the container host.
+>* An authorized SSH key and sudo access on the proxy.neap.space server.
+
 >**Why use two different subdomains?**
 >
 >The neap.space network uses this configuration to avoid creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another specified DNS zone.
 >
 >
 >While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request goes to a different DNS server than you expect. For example, applications like Chrome might prioritize a certain public DNS server over the local one, causing internal requests to be resolved as though they were from the public internet.
-
-Complete the steps in the following sections to make a container application available to users by adding it to the reverse proxy rules for each subdomain. These steps apply only to applications in a container runtime such as Docker or Podman that you configure using Docker Compose.
 
 >**Prerequisites:**
 >* An authorized SSH key and sudo access on the proxy.neap.space server.
