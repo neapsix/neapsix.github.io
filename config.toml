@@ -1,7 +1,7 @@
 languageCode = "en-us"
 title = "neap space"
 theme = "etch"
-summaryLength = 32
+summaryLength = 64
 enableInlineShortcodes = true
 
 [markup]
