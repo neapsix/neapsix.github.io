@@ -11,11 +11,11 @@ One view I'd like to promote is that everyone has important data, and it's worth
 
 ### It's a Series of Tubes
 
-My biggest challenge to backing up data over the internet is uploading a lot of data with only a little upload bandwidth. My cable internet connection from Charter is rated for 300 Mbit/s down and 30 Mbit/s up (In practice, I usually see a little less). The only other option available to me is an even slower DSL connection. On the bright side, I'm fortunate not to have a data cap!
+My biggest challenge to backing up data over the internet is uploading a lot of data with only a little upload bandwidth. My cable internet connection from Charter is rated for 300 Mbit/s down and 30 Mbit/s up (In practice, I usually see a little less). The only other option available to me is an even slower DSL connection. On the bright side, I'm fortunate not to have a data cap.
 
-Backing up a terabyte of data on this connection would take about three days using 100% of my upload bandwidth the whole time. Of course, the solution to this problem is to run the backup once, then use incremental backups that don't require a regular full backup. However, because the connection is [not a big truck](https://youtu.be/f99PcP0aFNE), the incremental backups also need to be efficient to avoid interfering with other traffic on the network.
+Backing up a terabyte of data on this connection would take about three days using 100% of my upload bandwidth the whole time. With incremental backups, I don't need to run a full backup often, but because the connection is [not a big truck](https://youtu.be/f99PcP0aFNE), the incremental backups also need to be efficient to avoid interfering with other traffic on the network.
 
-The other challenge for me personally is puzzling out what backup client meets my needs while being stable, trusted, and reasonably convenient to administer. There are a lot of options for backing up a headless server to a cloud storage provider, and all of them have advantages and tradeoffs.
+The other hurdle for me personally is puzzling out what backup client meets my needs while being stable, trusted, and reasonably convenient to administer. There are a lot of options for backing up a headless server to cloud storage, and they all have advantages and tradeoffs.
 
 ### Requirements and Considerations
 
