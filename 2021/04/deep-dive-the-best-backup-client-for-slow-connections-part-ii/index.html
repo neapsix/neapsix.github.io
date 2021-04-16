@@ -1,0 +1,76 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=favicon.ico><link rel=stylesheet href=/css/style.min.css><title>Deep Dive: The Best Backup Client for Slow Connections, Part II</title></head><body><header id=banner><h2><a href>neap space</a></h2><nav><ul><li><a href=/ title=posts>posts</a></li><li><a href=/about/ title=about>about</a></li></ul></nav></header><main id=content><article><header id=post-header><h1>Deep Dive: The Best Backup Client for Slow Connections, Part II</h1><time>April 16, 2021</time></header><p>This is the second post in my deep dive series on cloud backup for network attached storage (NAS). In this article, I&rsquo;ll walk through preparing the test machine and the tools I used to evaluate candidate backup clients</p><p>If you&rsquo;re not interested in <code>kvm</code> or shell scripts and just want the results, you might want to skip to the next part. However, if you&rsquo;re new to setting up virtual machines and ZFS or are interested in doing similar testing, keep reading to see what I did.</p><h3 id=initial-setup>Initial Setup</h3><p>To model my NAS configuration fairly closely, I set up a virtual machine in KVM running FreeBSD 12.2 RELEASE:</p><pre><code># virt-install \
+--name freebsd-12.2-gold \
+--import \
+--memory 1024 \
+--vcpus 1 \
+--disk FreeBSD-12.2-RELEASE-amd64.qcow2 \
+--os-variant freebsd12.0 \
+--network bridge:br0 \
+--noautoconsole
+</code></pre><p>My VM host is running Ubuntu Server 20.04 and has a network bridge created with <code>netplan</code> at <code>br0</code>. This command sets up a machine from the prebuilt QEMU image for FreeBSD 12.2 using bridged networking. The <code>noautoconsole</code> option prevents the install from hanging without a graphical output. The &ldquo;gold&rdquo; machine is cloned to create a clean test rig for each candidate.</p><h5 id=a-little-housekeeping>A Little Housekeeping</h5><p>Since I&rsquo;m setting up this VM for the first time, I did a couple things to make it easier to access.</p><p>Both SSH and the serial port console (needed to connect from the host using <code>virsh console</code>) are disabled by default, so I had to connect using the graphical VNC console.</p><pre><code>$ ssh -X &lt;container host&gt; # Make sure X11 forwarding is enabled on the container host first.
+$ virt-viewer freebsd-12.2-gold
+</code></pre><p>The ssh -X command uses X11 forwarding to display the GUI console application on the machine accessing the server. For a one-off test, I could have just used this console for the whole test process, but I prefer using SSH and virsh to manage VMs.</p><p>On the virtual machine, I logged in as root and ran the following commands to enable SSH and the serial console:</p><pre><code># echo sshd_enable=&quot;YES&quot; &gt;&gt; /etc/rc.conf
+# echo 'console=&quot;comconsole&quot;' &gt;&gt; /boot/loader.conf
+</code></pre><p>For reference information about these commands, refer to the <a href=https://docs.freebsd.org/en_US.ISO8859-1/books/handbook/serialconsole-setup.html>serial console</a> and <a href=https://docs.freebsd.org/en_US.ISO8859-1/books/handbook/openssh.html>SSH</a> topics in the FreeBSD Handbook.</p><p>I also added a user, locked root login, and updated FreeBSD to the latest patch version.</p><h5 id=deploying-the-test-machine>Deploying the Test Machine</h5><p>I then cloned the gold image to create a test machine:</p><pre><code># virt-clone -o freebsd-12.2-gold -n freebsd-12.2-backuptest --auto-clone
+</code></pre><p>Next, I installed two spare physical hard drives in the VM host to use in my test zpool and passed them through to the test VM:</p><pre><code># virsh attach-disk freebsd-12.2-backuptest /dev/disk/by-id/ata-XXXX vdb --config
+# virsh attach-disk freebsd-12.2-backuptest /dev/disk/by-id/ata-XXXX vdc --config
+</code></pre><p>Virtual disks would work too, but I had some old drives on hand and wanted to model the real-world use as closely as possible. The two drives I used are WD consumer drives that are about a decade old. Regardless, I expect the backup to be limited by my upload speed, not the read speed of the drives.</p><p>In the VM, I configured a pool with one mirror vdev containing the two drives.</p><pre><code># zpool create tank mirror /dev/vtbd1 /dev/vtbd2
+</code></pre><blockquote><h6 id=dont-do-this>Don&rsquo;t do this!</h6><p>This command is missing two parameters that you should always include when creating a real vdev:</p><ul><li>First, always check your drive&rsquo;s physical block size and specify the correct <code>ashift</code> value. You usually would need <code>-o ashift=12</code> or <code>13</code> in this command when adding modern drives with a 4k or 5k block size. These ancient drives actually have a physical block size of 512k so the default ashift value of 9 is correct. Check yours with <code>smartctl -i &lt;disk></code> (keeping in mind that most drives report a logical blocksize of 512k for compatibility reasons). On Linux, you can skip installing smartmontools and use <code>lsblk -o name,phy-sec</code>).</li><li>Second, you should specify the drives with /dev/diskid/DISK-XXX (on FreeBSD) or /dev/disk/by-id/ata-XXX (on Linux). I used the assigned disk identifiers because the VM doesn&rsquo;t present disk IDs, and I won&rsquo;t ever need to swap or replace the drives in the VM.</li></ul></blockquote><p>I also enabled compression and disabled access times to match my real storage pool and set FreeBSD to mount zpools at startup:</p><pre><code># zfs set compression=lz4 tank
+# zfs set atime=off tank
+# echo 'zfs_enable=&quot;YES&quot;' &gt;&gt; /etc/rc.conf
+</code></pre><p>Next, I created some datasets in the pool, copied over a representative chunk of data from my NAS, and created a snapshot.</p><pre><code># zfs create -o casesensitivity=mixed tank/docs
+# zfs create -o casesensitivity=mixed -o recordsize=1M tank/photos
+# zfs create -o casesensitivity=mixed -o recordsize=1M tank/audio
+# zfs create -o casesensitivity=mixed -o recordsize=1M tank/video
+# chown -R ben:ben /tank/*
+
+[...]
+
+ # zfs snapshot -r tank@initial
+</code></pre><h3 id=test-methodology-and-procedures>Test Methodology and Procedures</h3><p>I tested the following backup programs:</p><ul><li>duplicity (de-duplicated full and incremental backups)</li><li>restic (de-duplicated incremental without needing periodic full backups)</li><li>rclone (simple sync utility with excellent cloud support)</li><li>b2-sync (simple sync utility provided by Backblaze)</li></ul><p>Although I didn&rsquo;t test duplicacy, I&rsquo;m indebted to the widely shared <a href=https://github.com/gilbertchen/benchmarking>tests by Gilbert Chen</a>, the author of duplicacy. Chen covers some of the same variables that I&rsquo;m interested in and covers duplicity and restic. I&rsquo;ll be interested to see whether I can replicate his results.</p><p>I tested three use cases: the initial backup, a series of incremental backups, and a complete restore. In each use case, I measured:</p><ul><li>Time</li><li>Network usage</li><li>Size on disk</li></ul><p>I also recorded CPU and memory usage during the backup, but those measurements are primarily to check for issues due to testing in low-spec virtual machine.</p><p>To measure performance, I created that runs the backup utility along with the following tools, which are available in the FreeBSD 12.2 base system:</p><ul><li><code>time</code></li><li><code>netstat</code></li><li><code>vmstat</code></li></ul><p>Note that you might need to tweak the script below to run the same test on Linux, because the BSD versions of these tools have different options and syntax. Linux users might want to use <code>sar</code> instead of <code>netstat</code> to measure network utilization.</p><p>I created this script to run the backup utility and the monitoring utilities concurrently:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#ff79c6>#!/bin/sh
+</span><span style=color:#ff79c6></span><span style=color:#8be9fd;font-style:italic>command</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#34;&lt;Your backup command&gt;&#34;</span>
+
+<span style=color:#6272a4># &lt;Set environment variables for credentials and other data here&gt;</span>
+
+<span style=color:#6272a4># On Ctrl+C, kill all the processess in the group.</span>
+<span style=color:#8be9fd;font-style:italic>trap</span> <span style=color:#f1fa8c>&#39;kill 0&#39;</span> SIGINT
+
+<span style=color:#6272a4># Do the main command.</span>
+<span style=color:#8be9fd;font-style:italic>time</span> -l <span style=color:#8be9fd;font-style:italic>$command</span> <span style=color:#ff79c6>&amp;&amp;</span>
+<span style=color:#6272a4># After it&#39;s done, kill all the processes in the group.</span>
+<span style=color:#8be9fd;font-style:italic>kill</span> <span style=color:#bd93f9>0</span>  &amp;
+<span style=color:#6272a4># Run these commands concurrently with the main command.</span>
+vmstat <span style=color:#bd93f9>1</span> --libxo xml,pretty &gt; ./vmstat.txt &amp;
+netstat -I vtnet0 -w <span style=color:#bd93f9>1</span> --libxo xml,pretty &gt; ./netstat.txt
+</code></pre></div><p>This script makes sure that we stop monitoring right when the backup finishes. To break down the options for each command:</p><ul><li>The <code>vmstat 1</code> and <code>netstat -w 1</code> commands write an output to a file once per second.</li><li>The <code>--libxo xml,pretty</code> argument tells them to output as structured XML data instead of the usual on-screen display, so it&rsquo;s easier to process the data. As it turned out, the XML output needed manual tweaking, so I&rsquo;d say it&rsquo;s a tossup whether the libxo option is useful in this case.</li><li>The <code>time -l</code> option shows some CPU and memory stats in addition to times (somewhat duplicative of vmstat).</li><li>Finally, <code>netstat -I vtnet0</code> just means only count the traffic through the VM network interface.</li></ul><p>Here are the commands that I plugged into the script above for each backup client:</p><p>Duplicity:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#6272a4># Backblaze B2 configuration variables</span>
+<span style=color:#8be9fd;font-style:italic>B2_ACCOUNT</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Account ID&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>B2_KEY</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Application key&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>B2_BUCKET</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Bucket name&gt;&#39;</span>
+
+<span style=color:#6272a4># GPG key</span>
+<span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>ENC_KEY</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Last 8 characters of GPG key&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>PASSPHRASE</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;GPG key passphrase&gt;&#39;</span>
+
+<span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;duplicity --encrypt-sign-key $ENC_KEY /tank b2://${B2_ACCOUNT}:${B2_KEY}@${B2_BUCKET}&#39;</span>
+
+<span style=color:#6272a4># Restore:</span>
+duplicity restore --force b2://<span style=color:#f1fa8c>${</span><span style=color:#8be9fd;font-style:italic>B2_ACCOUNT</span><span style=color:#f1fa8c>}</span>:<span style=color:#f1fa8c>${</span><span style=color:#8be9fd;font-style:italic>B2_KEY</span><span style=color:#f1fa8c>}</span>@<span style=color:#f1fa8c>${</span><span style=color:#8be9fd;font-style:italic>B2_BUCKET</span><span style=color:#f1fa8c>}</span> /tank/
+</code></pre></div><p>Restic:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>B2_ACCOUNT_ID</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Account ID&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>B2_ACCOUNT_KEY</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;&lt;Application key&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>RESTIC_REPOSITORY</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;b2:&lt;Bucket name&gt;&#39;</span>
+<span style=color:#8be9fd;font-style:italic>export</span> <span style=color:#8be9fd;font-style:italic>RESTIC_PASSWORD_FILE</span><span style=color:#ff79c6>=</span><span style=color:#f1fa8c>&#39;/path/to/password/file&#39;</span>
+
+<span style=color:#6272a4># To back up:</span>
+<span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;restic backup /tank&#39;</span>
+
+<span style=color:#6272a4># To restore:</span>
+<span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;restic restore latest --target /tank&#39;</span>
+</code></pre></div><p>Rclone (after initial setup to authorize the account):</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;rclone sync --checksum --log-file ./rclone.log --progress --stats-one-line --transfers 4 --verbose /tank remote:&lt;Bucket name&gt;&#39;</span>
+
+<span style=color:#6272a4># To restore, switch /tank and remote:&lt;Bucket name&gt;</span>
+</code></pre></div><p>B2 sync (after initial setup to authorize the account):</p><div class=highlight><pre style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#6272a4># To back up:</span>
+<span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;b2 sync --keepDays 30 --replaceNewer --threads 30 /tank b2://&lt;Bucket name&gt;/&#39;</span>
+
+<span style=color:#6272a4># To restore:</span>
+<span style=color:#8be9fd;font-style:italic>command</span> <span style=color:#ff79c6>=</span> <span style=color:#f1fa8c>&#39;b2 sync --replaceNewer --threads 30 b2://&lt;Bucket name/ /tank/&#39;</span>
+</code></pre></div><h3 id=next-steps>Next Steps</h3><p>Next up, the test results. Part III will dig into the data from each test and my conclusions.</p></article></main><footer id=footer>Copyright © 2021 Benjamin Spiegel</footer></body></html>
