@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: The Best Backup Client for Slow Connections, Part II"
+title: "Deep Dive: Cloud Backup for Slow Connections, Part II"
 date: 2021-04-16T00:00:00-06:00
 ---
 
@@ -24,7 +24,7 @@ To model my NAS configuration fairly closely, I set up a virtual machine in KVM 
 
  My VM host is running Ubuntu Server 20.04 and has a network bridge created with `netplan` at `br0`. This command sets up a machine from the prebuilt QEMU image for FreeBSD 12.2 using bridged networking. The `noautoconsole` option prevents the install from hanging without a graphical output. The "gold" machine is cloned to create a clean test rig for each candidate.
 
-##### A Little Housekeeping
+#### A Little Housekeeping
 
 Since I'm setting up this VM for the first time, I did a couple things to make it easier to access.
 
@@ -45,7 +45,7 @@ For reference information about these commands, refer to the [serial console](ht
 
 I also added a user, locked root login, and updated FreeBSD to the latest patch version.
 
-##### Deploying the Test Machine
+#### Deploying the Test Machine
 
 I then cloned the gold image to create a test machine:
 ```
@@ -63,7 +63,7 @@ In the VM, I configured a pool with one mirror vdev containing the two drives.
 ```
 # zpool create tank mirror /dev/vtbd1 /dev/vtbd2
 ```
->###### Don't do this!
+>##### Don't do this!
 >This command is missing two parameters that you should always include when creating a real vdev:
 > * First, always check your drive's physical block size and specify the correct `ashift` value. You usually would need `-o ashift=12` or `13` in this command when adding modern drives with a 4k or 5k block size. These ancient drives actually have a physical block size of 512k so the default ashift value of 9 is correct. Check yours with `smartctl -i <disk>` (keeping in mind that most drives report a logical blocksize of 512k for compatibility reasons). On Linux, you can skip installing smartmontools and use `lsblk -o name,phy-sec`).
 > * Second, you should specify the drives with /dev/diskid/DISK-XXX (on FreeBSD) or /dev/disk/by-id/ata-XXX (on Linux). I used the assigned disk identifiers because the VM doesn't present disk IDs, and I won't ever need to swap or replace the drives in the VM.
