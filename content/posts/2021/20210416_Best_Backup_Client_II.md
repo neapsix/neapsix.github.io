@@ -65,7 +65,7 @@ In the VM, I configured a pool with one mirror vdev containing the two drives.
 ```
 >##### Don't do this!
 >This command is missing two parameters that you should always include when creating a real vdev:
-> * First, always check your drive's physical block size and specify the correct `ashift` value. You usually would need `-o ashift=12` or `13` in this command when adding modern drives with a 4k or 5k block size. These ancient drives actually have a physical block size of 512k so the default ashift value of 9 is correct. Check yours with `smartctl -i <disk>` (keeping in mind that most drives report a logical blocksize of 512k for compatibility reasons). On Linux, you can skip installing smartmontools and use `lsblk -o name,phy-sec`).
+> * First, always check your drive's physical block size and specify the correct `ashift` value. You usually would need `-o ashift=12` or `13` in this command when adding modern drives with a 4k or 5k block size, respectively. These ancient drives actually have a physical block size of 512, so the default ashift value of 9 is correct. Check yours with `smartctl -i <disk>`, keeping in mind that most drives report a logical blocksize of 512 for compatibility reasons. On Linux, you can skip installing smartmontools and use `lsblk -o name,phy-sec`.
 > * Second, you should specify the drives with /dev/diskid/DISK-XXX (on FreeBSD) or /dev/disk/by-id/ata-XXX (on Linux). I used the assigned disk identifiers because the VM doesn't present disk IDs, and I won't ever need to swap or replace the drives in the VM.
 
 I also enabled compression and disabled access times to match my real storage pool and set FreeBSD to mount zpools at startup:
