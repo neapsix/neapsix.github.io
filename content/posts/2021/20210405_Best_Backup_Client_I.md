@@ -2,13 +2,13 @@
 title: "Deep Dive: Cloud Backup for Slow Connections, Part I"
 date: 2021-04-05T00:00:00-06:00
 ---
-> For detailed steps, scripts, and results, you can follow along with the GitHub repo that accompanies this series of articles here: [neapsix/cloudbackup-benchmarks](https://github.com/neapsix/cloudbackup-benchmarks).
-
 In case further proof were needed, last month's story about the [companies that lost irreplaceable data in a literal towering inferno](https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters) proves again that everyone with important files needs offsite backups. I don't mean to make fun of the hosting provider or the companies who got caught without backups in multiple locations (OK, maybe them, a little bit). Keeping your data safe from a real-world catastrophe---whether you're managing business infrastructure or New Folders (1) through (23) on your desktop---is hard!
 
 This is the first in a series of posts documenting a project I did to start backing my personal network attached storage (NAS) server to cloud storage. This post outlines my requirements for an effective cloud backup strategy and some challenges I've run into. Future posts will evaluate some different backup applications based on my testing and describe the technical implementation in more depth.
 
 One view I'd like to promote is that everyone has important data, and it's worth the effort to plan for disaster recovery. In my opinion, the considerations and risks are the same whether you're an individual or a large organization. I hope these posts can be a resource for anyone looking for a reliable backup solution.
+
+> For detailed steps, scripts, and results, you can follow along with the GitHub repo that accompanies this series of articles here: [neapsix/cloudbackup-benchmarks](https://github.com/neapsix/cloudbackup-benchmarks).
 
 ### It's a Series of Tubes
 
