@@ -2,6 +2,7 @@
 title: "Deep Dive: Cloud Backup for Slow Connections, Part I"
 date: 2021-04-05T00:00:00-06:00
 ---
+> For detailed steps, scripts, and results, you can follow along with the GitHub repo that accompanies this series of articles here: [neapsix/cloudbackup-benchmarks](https://github.com/neapsix/cloudbackup-benchmarks).
 
 In case further proof were needed, last month's story about the [companies that lost irreplaceable data in a literal towering inferno](https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters) proves again that everyone with important files needs offsite backups. I don't mean to make fun of the hosting provider or the companies who got caught without backups in multiple locations (OK, maybe them, a little bit). Keeping your data safe from a real-world catastrophe---whether you're managing business infrastructure or New Folders (1) through (23) on your desktop---is hard!
 

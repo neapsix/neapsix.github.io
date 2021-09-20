@@ -89,6 +89,8 @@ Next, I created some datasets in the pool, copied over a representative chunk of
 ```
 
 ### Test Methodology and Procedures
+>You can find my scripts, as well as detailed steps to recreate my test procedure, on GitHub here: [neapsix/cloudbackup-benchmarks](https://github.com/neapsix/cloudbackup-benchmarks)
+
 I tested the following backup programs:
 * duplicity (de-duplicated full and incremental backups)
 * restic (de-duplicated incremental without needing periodic full backups)
