@@ -3,7 +3,7 @@ title: "Deep Dive: Cloud Backup for Slow Connections, Part II"
 date: 2021-04-16T00:00:00-06:00
 ---
 
-This is the second post in my deep dive series on cloud backup for network attached storage (NAS). In this article, I'll walk through preparing the test machine and the tools I used to evaluate candidate backup clients
+This is the second post in my deep dive series on cloud backup for network attached storage (NAS). In this article, I'll walk through preparing the test machine and the tools I used to evaluate candidate backup clients.
 
 If you're not interested in `kvm` or shell scripts and just want the results, you might want to skip to the next part. However, if you're new to setting up virtual machines and ZFS or are interested in doing similar testing, keep reading to see what I did.
 
@@ -22,7 +22,7 @@ To model my NAS configuration fairly closely, I set up a virtual machine in KVM 
 --noautoconsole
 ```
 
- My VM host is running Ubuntu Server 20.04 and has a network bridge created with `netplan` at `br0`. This command sets up a machine from the prebuilt QEMU image for FreeBSD 12.2 using bridged networking. The `noautoconsole` option prevents the install from hanging without a graphical output. The "gold" machine is cloned to create a clean test rig for each candidate.
+My VM host is running Ubuntu Server 20.04 and has a network bridge created with `netplan` at `br0`. This command sets up a machine from the prebuilt QEMU image for FreeBSD 12.2 using bridged networking. The `noautoconsole` option prevents the install from hanging without a graphical output. The "gold" machine is cloned to create a clean test rig for each candidate.
 
 #### A Little Housekeeping
 
@@ -106,7 +106,7 @@ I tested three use cases: the initial backup, a series of incremental backups, a
 
 I also recorded CPU and memory usage during the backup, but those measurements are primarily to check for issues due to testing in low-spec virtual machine.
 
-To measure performance, I created that runs the backup utility along with the following tools, which are available in the FreeBSD 12.2 base system:
+To measure performance, I created a script that runs the backup utility along with the following tools in the FreeBSD 12.2 base system:
 * `time`
 * `netstat`
 * `vmstat`
