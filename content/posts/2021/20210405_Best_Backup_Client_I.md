@@ -4,7 +4,7 @@ date: 2021-04-05T00:00:00-06:00
 ---
 In case further proof were needed, last month's story about the [companies that lost irreplaceable data in a literal towering inferno](https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters) proves again that everyone with important files needs offsite backups. I don't mean to make fun of the hosting provider or the companies who got caught without backups in multiple locations (OK, maybe them, a little bit). Keeping your data safe from a real-world catastrophe---whether you're managing business infrastructure or New Folders (1) through (23) on your desktop---is hard!
 
-This is the first in a series of posts documenting a project I did to start backing my personal network attached storage (NAS) server to cloud storage. This post outlines my requirements for an effective cloud backup strategy and some challenges I've run into. Future posts will evaluate some different backup applications based on my testing and describe the technical implementation in more depth.
+This is the first in a series of posts documenting a project I did to start backing up my personal network attached storage (NAS) server to cloud storage. This post outlines my requirements for an effective cloud backup strategy and some challenges I've run into. Future posts will evaluate some different backup applications based on my testing and describe the technical implementation in more depth.
 
 One view I'd like to promote is that everyone has important data, and it's worth the effort to plan for disaster recovery. In my opinion, the considerations and risks are the same whether you're an individual or a large organization. I hope these posts can be a resource for anyone looking for a reliable backup solution.
 
@@ -12,9 +12,9 @@ One view I'd like to promote is that everyone has important data, and it's worth
 
 ### It's a Series of Tubes
 
-My biggest challenge to backing up data over the internet is uploading a lot of data with only a little upload bandwidth. My cable internet connection from Charter is rated for 300 Mbit/s down and 30 Mbit/s up. In practice, I usually see a little less. The only other option in my neighborhood is a DSL connection. I'm fortunate not to have a data cap.
+My biggest challenge to backing up data over the internet is uploading a lot of data with only a little upload bandwidth. My cable internet connection from Charter is rated for 300 Mbit/s down and 30 Mbit/s up. In practice, I usually see a little less. The only other option in my neighborhood is a DSL connection, but at least I don't have a data cap.
 
-Backing up a terabyte of data on my connection would take three days using 100% of my upload bandwidth the entire time. With incremental backups, I don't need to run a full backup often, but because the connection is [not a big truck](https://youtu.be/f99PcP0aFNE), the incremental process also needs to be efficient to avoid interfering with other traffic on the network.
+Backing up a terabyte of data on my connection would take three days using 100% of my upload bandwidth the entire time. With incremental backups, I don't need to upload that much very often, but because the connection is [not a big truck](https://youtu.be/f99PcP0aFNE), the incremental process also needs to be efficient to avoid interfering with other traffic on the network.
 
 The other challenge for me personally is puzzling out what backup client best meets my needs while being stable, trusted, and reasonably convenient to use and administer. There are a lot of options, and each has benefits and drawbacks.
 
@@ -35,7 +35,7 @@ The following criteria are nice-to-have's:
 
 Of course, the backup plan must have well documented procedures and defined recovery point and time objectives (RPO and RTO), and those procedures should be regularly tested.
 
-Note that I see cloud backups as a supplement to other methods. For example, a cloud backup might be the third copy in a 3-2-1 strategy (three copies, two local, and one offsite). I run local backups by copying my data to a pair of USB hard drives using ZFS replication. My previous solution to offsite backups was to regularly swap the USB drives and keep one of them at my office.
+Note that I see cloud backups as a supplement to other methods. For example, a cloud backup might be the third copy in a 3-2-1 strategy (three copies, two local, and one offsite). I already run local backups by copying my data to a pair of USB hard drives using ZFS replication. Keeping one of the two drives at my office gets me an offsite backup, but the RPO with that strategy depends on my remembering to swap the drives often.
 
 ### Next Steps
 
