@@ -86,7 +86,7 @@
 <h3 id=set-up-a-tunnel-with-the-reverse-proxy-server>Set Up a Tunnel with the Reverse Proxy Server</h3>
 <p>Create a tunnel between the two servers using Wireguard. The Wireguard connection should have two peers: the reverse proxy server and the container host. They should be assigned IP addresses on a subnet that doesn&rsquo;t overlap with anything else on your network. For steps to set up a Wireguard tunnel, refer to the <a href=https://www.wireguard.com/quickstart/>Quick Start</a> topic in the Wireguard documentation.</p>
 <h3 id=add-a-reverse-proxy-rule>Add a Reverse Proxy Rule</h3>
-<p>Update the reverse proxy server configuration to redirect requests for <code>&lt;application>.proxy.example.com</code> to the container application.</p>
+<p>Make your container container available over the Wireguard tunnel, and configure the reverse proxy server to redirect requests for <code>&lt;application>.proxy.example.com</code> to it.</p>
 <p>In your Docker Compose file, in the definition for your application, publish a port on the host. For example, you might have this line mapping port 58001 on the container host to port 80 on the container:</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>ports</span>:
   - <span style=color:#f1fa8c>&#34;58001:80&#34;</span>
