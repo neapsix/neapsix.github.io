@@ -72,7 +72,7 @@ In addition, your reverse proxy server needs a valid TLS certificate for `*.prox
 Create a tunnel between the two servers using Wireguard. The Wireguard connection should have two peers: the reverse proxy server and the container host. They should be assigned IP addresses on a subnet that doesn't overlap with anything else on your network. For steps to set up a Wireguard tunnel, refer to the [Quick Start](https://www.wireguard.com/quickstart/) topic in the Wireguard documentation.
 
 ### Add a Reverse Proxy Rule
-Update the reverse proxy server configuration to redirect requests for `<application>.proxy.example.com` to the container application.
+Make your container container available over the Wireguard tunnel, and configure the reverse proxy server to redirect requests for `<application>.proxy.example.com` to it.
 
 In your Docker Compose file, in the definition for your application, publish a port on the host. For example, you might have this line mapping port 58001 on the container host to port 80 on the container:
 
