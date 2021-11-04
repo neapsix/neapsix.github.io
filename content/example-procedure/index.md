@@ -57,7 +57,7 @@ Then, configure Traefik on the container host to route requests to `<application
 
 >**Note:**
 >
->This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the [Docker & Let's Encrypt](https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/) topic in the Traefik documentation.
+>This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not need to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the [Docker & Let's Encrypt](https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/) topic in the Traefik documentation.
 
 ## Let Users Access the Application from the Public Internet
 Complete these tasks to enable external access:
