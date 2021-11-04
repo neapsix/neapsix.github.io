@@ -21,30 +21,30 @@
 <article>
 <header id=post-header>
 <h1>Make a Container Application Available to Internal and External Users</h1></header><h1 id=make-a-container-application-available-to-internal-and-external-users>Make a Container Application Available to Internal and External Users</h1>
-<p>To keep your domain name service (DNS) configuration simple and make an application available to people on your internal network and people outside your network, you can host the application on two subdomains, such as:</p>
+<p>To keep your domain name service (DNS) configuration simple and make an application available to people both on your internal network and outside your network, you can host the application on two subdomains, such as:</p>
 <ul>
 <li><code>&lt;your application>.apps.example.com</code>, which is resolved only on the internal network.</li>
 <li><code>&lt;your application>.proxy.example.com</code>, which is resolved over the public internet.</li>
 </ul>
-<p>This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another specified DNS zone.</p>
+<p>This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another DNS zone.</p>
 <blockquote>
 <p><strong>Why use two different subdomains instead of split-horizon DNS?</strong></p>
-<p>While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server, such as Google&rsquo;s DNS server at 8.8.8.8, requests to internal websites would be incorrectly routed out to the internet and then back instead of remaining within your network.</p>
-<p>You can also avoid this issue by making sure your computer prioritizes your internal DNS server before public DNS servers, but some applications, such as Chrome, might be set up to prioritize a public DNS server by default.</p>
+<p>While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server like Google&rsquo;s DNS server at 8.8.8.8, requests to internal websites might be incorrectly routed out to the internet and back instead of remaining on your internal network.</p>
+<p>You can also avoid this issue by making sure your computer prioritizes your internal network&rsquo;s DNS server before public DNS servers. However, some applications, such as Google Chrome, might be set up to prioritize a public DNS server by default.</p>
 </blockquote>
 <p>Complete the steps in the following sections to make a container application available on both subdomains using reverse proxy rules. These steps describe setup you can do with Docker Compose files to run containers in a runtime such as Docker or Podman.</p>
 <blockquote>
 <p><strong>Prerequisites:</strong></p>
-<p>The container host on your internal network needs:</p>
+<p>The machine hosting your container application must have:</p>
 <ul>
 <li>A container runtime such as Docker or Podman with bridge networking enabled.</li>
 <li>A Docker Compose file defining a container for your application and a container for the Traefik reverse proxy package.</li>
 </ul>
-<p>You also need a publicly available server, such as a VPS, to act as a reverse proxy server. The reverse proxy server needs a web server package such as nginx set up.</p>
-<p>Both the container host and the reverse proxy server need Wireguard installed.</p>
+<p>You also need a publicly available machine to act as a reverse proxy server, such as a virtual private server (VPS). The reverse proxy server needs a web server package, such as nginx, installed.</p>
+<p>Both machines must have Wireguard installed.</p>
 </blockquote>
 <h2 id=let-users-access-the-application-from-your-network>Let Users Access the Application from Your Network</h2>
-<p>First, make sure the local DNS server on your internal network has an entry that points the internal URL, <code>&lt;application.apps.example.com</code>, to your container host&rsquo;s IP address. You can set up a specific DNS entry for <code>&lt;application>.apps.example.com</code> or a wildcard entry for <code>*.apps.example.com</code>. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using <code>pi-hole</code>.</p>
+<p>First, make sure the local DNS server on your internal network has an entry that maps the internal URL, <code>&lt;application.apps.example.com</code>, to your container host&rsquo;s IP address. You can set up a specific DNS entry for <code>&lt;application>.apps.example.com</code> or a wildcard entry for <code>*.apps.example.com</code>. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using <code>pi-hole</code>.</p>
 <p>Then, configure Traefik on the container host to route requests to <code>&lt;application>.apps.example.com</code> and to your container using the container runtime&rsquo;s internal routing:</p>
 <ol>
 <li>
@@ -71,7 +71,8 @@
 </li>
 </ol>
 <blockquote>
-<p><strong>Note:</strong> This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the <a href=https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/>Docker & Let&rsquo;s Encrypt</a> topic in the Traefik documentation.</p>
+<p><strong>Note:</strong></p>
+<p>This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the <a href=https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/>Docker & Let&rsquo;s Encrypt</a> topic in the Traefik documentation.</p>
 </blockquote>
 <h2 id=let-users-access-the-application-from-the-public-internet>Let Users Access the Application from the Public Internet</h2>
 <p>Complete these tasks to enable external access:</p>
