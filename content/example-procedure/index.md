@@ -3,32 +3,32 @@ title: Make a Container Application Available to Internal and External Users
 draft: false
 ---
 # Make a Container Application Available to Internal and External Users
-To keep your domain name service (DNS) configuration simple and make an application available to people on your internal network and people outside your network, you can host the application on two subdomains, such as:
+To keep your domain name service (DNS) configuration simple and make an application available to people both on your internal network and outside your network, you can host the application on two subdomains, such as:
 * `<your application>.apps.example.com`, which is resolved only on the internal network.
 * `<your application>.proxy.example.com`, which is resolved over the public internet.
 
-This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another specified DNS zone.
+This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another DNS zone.
 
 >**Why use two different subdomains instead of split-horizon DNS?**
 >
->While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server, such as Google's DNS server at 8.8.8.8, requests to internal websites would be incorrectly routed out to the internet and then back instead of remaining within your network.
+>While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server like Google's DNS server at 8.8.8.8, requests to internal websites might be incorrectly routed out to the internet and back instead of remaining on your internal network.
 >
->You can also avoid this issue by making sure your computer prioritizes your internal DNS server before public DNS servers, but some applications, such as Chrome, might be set up to prioritize a public DNS server by default.
+>You can also avoid this issue by making sure your computer prioritizes your internal network's DNS server before public DNS servers. However, some applications, such as Google Chrome, might be set up to prioritize a public DNS server by default.
 
 Complete the steps in the following sections to make a container application available on both subdomains using reverse proxy rules. These steps describe setup you can do with Docker Compose files to run containers in a runtime such as Docker or Podman.
 
 >**Prerequisites:**
 >
->The container host on your internal network needs:
+>The machine hosting your container application must have:
 >* A container runtime such as Docker or Podman with bridge networking enabled.
 >* A Docker Compose file defining a container for your application and a container for the Traefik reverse proxy package.
 >
->You also need a publicly available server, such as a VPS, to act as a reverse proxy server. The reverse proxy server needs a web server package such as nginx set up.
+>You also need a publicly available machine to act as a reverse proxy server, such as a virtual private server (VPS). The reverse proxy server needs a web server package, such as nginx, installed.
 >
->Both the container host and the reverse proxy server need Wireguard installed.
+>Both machines must have Wireguard installed.
 
 ## Let Users Access the Application from Your Network
-First, make sure the local DNS server on your internal network has an entry that points the internal URL, `<application.apps.example.com`, to your container host's IP address. You can set up a specific DNS entry for `<application>.apps.example.com` or a wildcard entry for `*.apps.example.com`. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using `pi-hole`.
+First, make sure the local DNS server on your internal network has an entry that maps the internal URL, `<application.apps.example.com`, to your container host's IP address. You can set up a specific DNS entry for `<application>.apps.example.com` or a wildcard entry for `*.apps.example.com`. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using `pi-hole`.
 
 Then, configure Traefik on the container host to route requests to `<application>.apps.example.com` and to your container using the container runtime's internal routing:
 
@@ -55,7 +55,9 @@ Then, configure Traefik on the container host to route requests to `<application
 
 1. Run `docker-compose up -d` to start your containers.
 
->**Note:** This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the [Docker & Let's Encrypt](https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/) topic in the Traefik documentation.
+>**Note:**
+>
+>This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the [Docker & Let's Encrypt](https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/) topic in the Traefik documentation.
 
 ## Let Users Access the Application from the Public Internet
 Complete these tasks to enable external access:
