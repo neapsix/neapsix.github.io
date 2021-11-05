@@ -2,7 +2,6 @@
 title: Make a Container Application Available to Internal and External Users
 draft: false
 ---
-# Make a Container Application Available to Internal and External Users
 To keep your domain name service (DNS) configuration simple and make an application available to people both on your internal network and outside your network, you can host the application on two subdomains, such as:
 * `<your application>.apps.example.com`, which is resolved only on the internal network.
 * `<your application>.proxy.example.com`, which is resolved over the public internet.
