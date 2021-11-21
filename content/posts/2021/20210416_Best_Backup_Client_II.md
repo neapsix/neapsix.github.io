@@ -3,7 +3,9 @@ title: "Deep Dive: Cloud Backup for Slow Connections, Part II"
 date: 2021-04-16T00:00:00-06:00
 ---
 
-This is the second post in my deep dive series on cloud backup for network attached storage (NAS). In this article, I'll walk through preparing the test machine and the tools I used to evaluate candidate backup clients.
+This is the second post in my deep dive series on cloud backup for network attached storage (NAS). In this article, I'll walk through preparing the test machine and describe the tools I used to evaluate candidate backup clients.
+
+<!--more-->
 
 If you're not interested in `kvm` or shell scripts and just want the results, you might want to skip to the next part. However, if you're new to setting up virtual machines and ZFS or are interested in doing similar testing, keep reading to see what I did.
 
