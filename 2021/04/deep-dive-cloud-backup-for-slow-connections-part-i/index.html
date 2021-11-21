@@ -20,7 +20,8 @@
 <main id=content>
 <article>
 <header id=post-header>
-<h1>Deep Dive: Cloud Backup for Slow Connections, Part I</h1><time>April 5, 2021</time></header><p>In case further proof were needed, last month&rsquo;s story about the <a href=https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters>companies that lost irreplaceable data in a literal towering inferno</a> proves again that everyone with important files needs offsite backups. I don&rsquo;t mean to make fun of the hosting provider or the companies who got caught without backups in multiple locations (OK, maybe them, a little bit). Keeping your data safe from a real-world catastrophe&mdash;whether you&rsquo;re managing business infrastructure or New Folders (1) through (23) on your desktop&mdash;is hard!</p>
+<h1>Deep Dive: Cloud Backup for Slow Connections, Part I</h1><time>April 5, 2021</time></header><p>In case further proof were needed, last month&rsquo;s story about the companies that lost irreplaceable data in <a href=https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters>a literal towering inferno</a> proves again that everyone with important files needs offsite backups.</p>
+<p>I don&rsquo;t mean to make fun of the hosting provider or the companies who got caught without backups in multiple locations (OK, maybe them, a little bit). Keeping your data safe from a real-world catastrophe&mdash;whether you&rsquo;re managing business infrastructure or New Folders (1) through (23) on your desktop&mdash;is hard!</p>
 <p>This is the first in a series of posts documenting a project I did to start backing up my personal network attached storage (NAS) server to cloud storage. This post outlines my requirements for an effective cloud backup strategy and some challenges I&rsquo;ve run into. Future posts will evaluate some different backup applications based on my testing and describe the technical implementation in more depth.</p>
 <p>One view I&rsquo;d like to promote is that everyone has important data, and it&rsquo;s worth the effort to plan for disaster recovery. In my opinion, the considerations and risks are the same whether you&rsquo;re an individual or a large organization. I hope these posts can be a resource for anyone looking for a reliable backup solution.</p>
 <blockquote>
@@ -52,8 +53,7 @@
 <p>Of course, the backup plan must have well documented procedures and defined recovery point and time objectives (RPO and RTO), and those procedures should be regularly tested.</p>
 <p>Note that I see cloud backups as a supplement to other methods. For example, a cloud backup might be the third copy in a 3-2-1 strategy (three copies, two local, and one offsite). I already run local backups by copying my data to a pair of USB hard drives using ZFS replication. Keeping one of the two drives at my office gets me an offsite backup, but the RPO with that strategy depends on my remembering to swap the drives often.</p>
 <h3 id=next-steps>Next Steps</h3>
-<p>With my use case and end state goal (the why and the what) defined, the next task was to figure out how best to implement them. Part II will list the options I considered and the steps I took to test them.</p>
-</article>
+<p>With my use case and end state goal (the why and the what) defined, the next task was to figure out how best to implement them. Part II will list the options I considered and the steps I took to test them.</p></article>
 </main><footer id=footer>
 Copyright © 2021 Benjamin Spiegel
 </footer>
