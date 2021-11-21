@@ -6,7 +6,7 @@
             <small><time>{{ .Date.Format "Jan 2, 2006" }}</time></small>
         </a>
         <p style="font-size:16px;font-size:1.6rem;">
-            {{- .Summary }}{{ if .Truncated }} <a href="{{ .RelPermalink }}">[…]</a>{{ end }}
+            {{- .Summary }}
         </p>
     </li>
 {{- end }}
