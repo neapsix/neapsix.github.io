@@ -1,7 +1,6 @@
 ---
 title: "Deep Dive: Cloud Backup for Slow Connections, Part III"
 date: 2021-11-21T00:00:00-06:00
-draft: true
 ---
 
 This is the third part in my deep dive series on cloud backup for network attached storage (NAS). I'll share the results of my tests and comment on the benefits and drawbacks of each backup client.
