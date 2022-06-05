@@ -1,101 +1,14 @@
-<!doctype html><html><head>
-<meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<link rel="shortcut icon" href=favicon.ico>
-<link rel=stylesheet href=/css/style.min.css>
-<title>Make a Container Application Available to Internal and External Users</title>
-</head>
-<body><header id=banner>
-<h2><a href>neap space</a></h2>
-<nav>
-<ul>
-<li>
-<a href=/ title=posts>posts</a>
-</li><li>
-<a href=/about/ title=about>about</a>
-</li>
-</ul>
-</nav>
-</header>
-<main id=content>
-<article>
-<header id=post-header>
-<h1>Make a Container Application Available to Internal and External Users</h1></header><p>To keep your domain name service (DNS) configuration simple and make an application available to people both on your internal network and outside your network, you can host the application on two subdomains, such as:</p>
-<ul>
-<li><code>&lt;your application>.apps.example.com</code>, which is resolved only on the internal network.</li>
-<li><code>&lt;your application>.proxy.example.com</code>, which is resolved over the public internet.</li>
-</ul>
-<p>This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another DNS zone.</p>
-<blockquote>
-<p><strong>Why use two different subdomains instead of split-horizon DNS?</strong></p>
-<p>While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server like Google&rsquo;s DNS server at 8.8.8.8, requests to internal websites might be incorrectly routed out to the internet and back instead of remaining on your internal network.</p>
-<p>You can also avoid this issue by making sure your computer prioritizes your internal network&rsquo;s DNS server before public DNS servers. However, some applications, such as Google Chrome, might be set up to prioritize a public DNS server by default.</p>
-</blockquote>
-<p>Complete the steps in the following sections to make a container application available on both subdomains using reverse proxy rules. These steps describe setup you can do with Docker Compose files to run containers in a runtime such as Docker or Podman.</p>
-<blockquote>
-<p><strong>Prerequisites:</strong></p>
-<p>The machine hosting your container application must have:</p>
-<ul>
-<li>A container runtime such as Docker or Podman with bridge networking enabled.</li>
-<li>A Docker Compose file defining a container for your application and a container for the Traefik reverse proxy package.</li>
-</ul>
-<p>You also need a publicly available machine to act as a reverse proxy server, such as a virtual private server (VPS). The reverse proxy server needs a web server package, such as nginx, installed.</p>
-<p>Both machines must have Wireguard installed.</p>
-</blockquote>
-<h2 id=let-users-access-the-application-from-your-network>Let Users Access the Application from Your Network</h2>
-<p>First, make sure the local DNS server on your internal network has an entry that maps the internal URL, <code>&lt;application.apps.example.com</code>, to your container host&rsquo;s IP address. You can set up a specific DNS entry for <code>&lt;application>.apps.example.com</code> or a wildcard entry for <code>*.apps.example.com</code>. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using <code>pi-hole</code>.</p>
-<p>Then, configure Traefik on the container host to route requests to <code>&lt;application>.apps.example.com</code> and to your container using the container runtime&rsquo;s internal routing:</p>
-<ol>
-<li>
-<p>In your Docker Compose file, add the following parameters to the definition for your Traefik container.</p>
-<ul>
-<li>The <code>providers</code> lines enable reverse proxy redirection to other containers using internal routing.</li>
-<li>The <code>entrypoints</code> lines set up redirector websites on ports 80 and 443 for a user to hit when visiting <a href=http://apps.example.com>http://apps.example.com</a> and <a href=https://apps.example.com>https://apps.example.com</a>.</li>
-</ul>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>command</span>:
-  - <span style=color:#f1fa8c>&#34;--providers.docker=true&#34;</span>
-  - <span style=color:#f1fa8c>&#34;--providers.docker.exposedbydefault=false&#34;</span>
-  - <span style=color:#f1fa8c>&#34;--entrypoints.web.address=:80&#34;</span>
-  - <span style=color:#f1fa8c>&#34;--entrypoints.websecure.address=:443&#34;</span>
-</code></pre></div></li>
-<li>
-<p>Go to the definition for your application&rsquo;s container and add the following metadata. These lines enable integration with Traefik and specify that requests to either entrypoint that match the string <code>&lt;application>.apps.example.com</code> should be routed to this container.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>labels</span>:
-  - <span style=color:#f1fa8c>&#34;traefik.enable=true&#34;</span>
-  - <span style=color:#f1fa8c>&#34;traefik.http.routers.&lt;your container&gt;.rule=Host(`&lt;your application&gt;.apps.example.com`)&#34;</span>
-  - <span style=color:#f1fa8c>&#34;traefik.http.routers.&lt;your container&gt;.entrypoints=web,websecure&#34;</span>
-</code></pre></div></li>
-<li>
-<p>Run <code>docker-compose up -d</code> to start your containers.</p>
-</li>
-</ol>
-<blockquote>
-<p><strong>Note:</strong></p>
-<p>This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not need to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the <a href=https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/>Docker & Let&rsquo;s Encrypt</a> topic in the Traefik documentation.</p>
-</blockquote>
-<h2 id=let-users-access-the-application-from-the-public-internet>Let Users Access the Application from the Public Internet</h2>
-<p>Complete these tasks to enable external access:</p>
-<ul>
-<li>Set up public DNS records and a TLS certificate for sites on the <code>proxy.example.com</code> reverse proxy server.</li>
-<li>Create a tunnel between the container host and the reverse proxy server.</li>
-<li>Add a reverse proxy rule that redirects requests for your application to the container host over that tunnel.</li>
-</ul>
-<h3 id=set-up-public-dns-records-and-a-tls-certificate-for-the-reverse-proxy-server>Set Up Public DNS Records and a TLS Certificate for the Reverse Proxy Server</h3>
-<p>You need public DNS records for your domain pointing the <code>*.proxy.example.com</code> subdomain to the IP address of your reverse proxy server. For instructions to set up DNS records for your domain, refer to the documentation for your DNS provider.</p>
-<p>In addition, your reverse proxy server needs a valid TLS certificate for <code>*.proxy.example.com</code>. This setup depends on your certificate authority and reverse proxy server package. For example, to get a certificate from Let&rsquo;s Encrypt and use it with nginx, refer to the <a href=https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/>Using Free Let’s Encrypt SSL/TLS Certificates with NGINX</a> topic in the nginx documentation.</p>
-<h3 id=set-up-a-tunnel-with-the-reverse-proxy-server>Set Up a Tunnel with the Reverse Proxy Server</h3>
-<p>Create a tunnel between the two servers using Wireguard. The Wireguard connection should have two peers: the reverse proxy server and the container host. They should be assigned IP addresses on a subnet that doesn&rsquo;t overlap with anything else on your network. For steps to set up a Wireguard tunnel, refer to the <a href=https://www.wireguard.com/quickstart/>Quick Start</a> topic in the Wireguard documentation.</p>
-<h3 id=add-a-reverse-proxy-rule>Add a Reverse Proxy Rule</h3>
-<p>Make your container container available over the Wireguard tunnel, and configure the reverse proxy server to redirect requests for <code>&lt;application>.proxy.example.com</code> to it.</p>
-<p>In your Docker Compose file, in the definition for your application, publish a port on the host. For example, you might have this line mapping port 58001 on the container host to port 80 on the container:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#ff79c6>ports</span>:
-  - <span style=color:#f1fa8c>&#34;58001:80&#34;</span>
-</code></pre></div><p>Then, set up the reverse proxy server to redirect <code>&lt;application>.proxy.example.com</code> to that port on the container host over the Wireguard tunnel. For example, to use a simple nginx site as the reverse proxy server, you might have the following configuration in <code>/etc/nginx/sites-enabled/&lt;application>.proxy.example.com</code>:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-nginx data-lang=nginx><span style=color:#ff79c6>server_name</span> <span style=color:#f1fa8c>&lt;application&gt;.proxy.example.com</span> <span style=color:#f1fa8c>www.&lt;application&gt;.proxy.example.com</span>;
-<span style=color:#ff79c6>set</span> <span style=color:#8be9fd;font-style:italic>$upstream</span> <span style=color:#f1fa8c>&lt;IP</span> <span style=color:#f1fa8c>of</span> <span style=color:#f1fa8c>tunneled</span> <span style=color:#f1fa8c>host&gt;:&lt;Published</span> <span style=color:#f1fa8c>port</span> <span style=color:#f1fa8c>of</span> <span style=color:#f1fa8c>application&gt;</span>;
-</code></pre></div></article>
-</main><footer id=footer>
-Copyright © 2021 Benjamin Spiegel
-</footer>
-</body>
-</html>
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=favicon.ico><link rel=stylesheet href=/css/style.min.css><title>Make a Container Application Available to Internal and External Users</title></head><body><header id=banner><h2><a href>neap space</a></h2><nav><ul><li><a href=/ title=posts>posts</a></li><li><a href=/about/ title=about>about</a></li></ul></nav></header><main id=content><article><header id=post-header><h1>Make a Container Application Available to Internal and External Users</h1></header><p>To keep your domain name service (DNS) configuration simple and make an application available to people both on your internal network and outside your network, you can host the application on two subdomains, such as:</p><ul><li><code>&lt;your application>.apps.example.com</code>, which is resolved only on the internal network.</li><li><code>&lt;your application>.proxy.example.com</code>, which is resolved over the public internet.</li></ul><p>This configuration avoids creating a split-horizon DNS, where one domain name is resolved differently depending on whether a user accesses it from internal network, the internet, or another DNS zone.</p><blockquote><p><strong>Why use two different subdomains instead of split-horizon DNS?</strong></p><p>While split-horizon DNS gives users one domain name to use everywhere, separate subdomains can help you avoid issues where a request is routed in an inefficient way. For example, if your computer is on the internal network but is configured to use a public DNS server like Google&rsquo;s DNS server at 8.8.8.8, requests to internal websites might be incorrectly routed out to the internet and back instead of remaining on your internal network.</p><p>You can also avoid this issue by making sure your computer prioritizes your internal network&rsquo;s DNS server before public DNS servers. However, some applications, such as Google Chrome, might be set up to prioritize a public DNS server by default.</p></blockquote><p>Complete the steps in the following sections to make a container application available on both subdomains using reverse proxy rules. These steps describe setup you can do with Docker Compose files to run containers in a runtime such as Docker or Podman.</p><blockquote><p><strong>Prerequisites:</strong></p><p>The machine hosting your container application must have:</p><ul><li>A container runtime such as Docker or Podman with bridge networking enabled.</li><li>A Docker Compose file defining a container for your application and a container for the Traefik reverse proxy package.</li></ul><p>You also need a publicly available machine to act as a reverse proxy server, such as a virtual private server (VPS). The reverse proxy server needs a web server package, such as nginx, installed.</p><p>Both machines must have Wireguard installed.</p></blockquote><h2 id=let-users-access-the-application-from-your-network>Let Users Access the Application from Your Network</h2><p>First, make sure the local DNS server on your internal network has an entry that maps the internal URL, <code>&lt;application.apps.example.com</code>, to your container host&rsquo;s IP address. You can set up a specific DNS entry for <code>&lt;application>.apps.example.com</code> or a wildcard entry for <code>*.apps.example.com</code>. Your internal DNS server might be hosted by your router or by a separate machine, such as a Raspberry Pi using <code>pi-hole</code>.</p><p>Then, configure Traefik on the container host to route requests to <code>&lt;application>.apps.example.com</code> and to your container using the container runtime&rsquo;s internal routing:</p><ol><li><p>In your Docker Compose file, add the following parameters to the definition for your Traefik container.</p><ul><li>The <code>providers</code> lines enable reverse proxy redirection to other containers using internal routing.</li><li>The <code>entrypoints</code> lines set up redirector websites on ports 80 and 443 for a user to hit when visiting <a href=http://apps.example.com>http://apps.example.com</a> and <a href=https://apps.example.com>https://apps.example.com</a>.</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>command</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;--providers.docker=true&#34;</span>
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;--providers.docker.exposedbydefault=false&#34;</span>
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;--entrypoints.web.address=:80&#34;</span>
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;--entrypoints.websecure.address=:443&#34;</span>
+</span></span></code></pre></div></li><li><p>Go to the definition for your application&rsquo;s container and add the following metadata. These lines enable integration with Traefik and specify that requests to either entrypoint that match the string <code>&lt;application>.apps.example.com</code> should be routed to this container.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>labels</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;traefik.enable=true&#34;</span>
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;traefik.http.routers.&lt;your container&gt;.rule=Host(`&lt;your application&gt;.apps.example.com`)&#34;</span>
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;traefik.http.routers.&lt;your container&gt;.entrypoints=web,websecure&#34;</span>
+</span></span></code></pre></div></li><li><p>Run <code>docker-compose up -d</code> to start your containers.</p></li></ol><blockquote><p><strong>Note:</strong></p><p>This configuration allows insecure HTTP access from the internal network. For testing purposes and home networks, you might not need to access your internal sites over TLS. However, if you want to do so, you can use Traefik to set up TLS automatically. For instructions, refer to the <a href=https://doc.traefik.io/traefik/v1.7/user-guide/docker-and-lets-encrypt/>Docker & Let&rsquo;s Encrypt</a> topic in the Traefik documentation.</p></blockquote><h2 id=let-users-access-the-application-from-the-public-internet>Let Users Access the Application from the Public Internet</h2><p>Complete these tasks to enable external access:</p><ul><li>Set up public DNS records and a TLS certificate for sites on the <code>proxy.example.com</code> reverse proxy server.</li><li>Create a tunnel between the container host and the reverse proxy server.</li><li>Add a reverse proxy rule that redirects requests for your application to the container host over that tunnel.</li></ul><h3 id=set-up-public-dns-records-and-a-tls-certificate-for-the-reverse-proxy-server>Set Up Public DNS Records and a TLS Certificate for the Reverse Proxy Server</h3><p>You need public DNS records for your domain pointing the <code>*.proxy.example.com</code> subdomain to the IP address of your reverse proxy server. For instructions to set up DNS records for your domain, refer to the documentation for your DNS provider.</p><p>In addition, your reverse proxy server needs a valid TLS certificate for <code>*.proxy.example.com</code>. This setup depends on your certificate authority and reverse proxy server package. For example, to get a certificate from Let&rsquo;s Encrypt and use it with nginx, refer to the <a href=https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/>Using Free Let’s Encrypt SSL/TLS Certificates with NGINX</a> topic in the nginx documentation.</p><h3 id=set-up-a-tunnel-with-the-reverse-proxy-server>Set Up a Tunnel with the Reverse Proxy Server</h3><p>Create a tunnel between the two servers using Wireguard. The Wireguard connection should have two peers: the reverse proxy server and the container host. They should be assigned IP addresses on a subnet that doesn&rsquo;t overlap with anything else on your network. For steps to set up a Wireguard tunnel, refer to the <a href=https://www.wireguard.com/quickstart/>Quick Start</a> topic in the Wireguard documentation.</p><h3 id=add-a-reverse-proxy-rule>Add a Reverse Proxy Rule</h3><p>Make your container container available over the Wireguard tunnel, and configure the reverse proxy server to redirect requests for <code>&lt;application>.proxy.example.com</code> to it.</p><p>In your Docker Compose file, in the definition for your application, publish a port on the host. For example, you might have this line mapping port 58001 on the container host to port 80 on the container:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#ff79c6>ports</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f1fa8c>&#34;58001:80&#34;</span>
+</span></span></code></pre></div><p>Then, set up the reverse proxy server to redirect <code>&lt;application>.proxy.example.com</code> to that port on the container host over the Wireguard tunnel. For example, to use a simple nginx site as the reverse proxy server, you might have the following configuration in <code>/etc/nginx/sites-enabled/&lt;application>.proxy.example.com</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-nginx data-lang=nginx><span style=display:flex><span><span style=color:#ff79c6>server_name</span> <span style=color:#f1fa8c>&lt;application&gt;.proxy.example.com</span> <span style=color:#f1fa8c>www.&lt;application&gt;.proxy.example.com</span>;
+</span></span><span style=display:flex><span><span style=color:#ff79c6>set</span> <span style=color:#8be9fd;font-style:italic>$upstream</span> <span style=color:#f1fa8c>&lt;IP</span> <span style=color:#f1fa8c>of</span> <span style=color:#f1fa8c>tunneled</span> <span style=color:#f1fa8c>host&gt;:&lt;Published</span> <span style=color:#f1fa8c>port</span> <span style=color:#f1fa8c>of</span> <span style=color:#f1fa8c>application&gt;</span>;
+</span></span></code></pre></div></article></main><footer id=footer>Copyright © 2021 Benjamin Spiegel</footer></body></html>
