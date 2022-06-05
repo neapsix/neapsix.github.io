@@ -91,11 +91,13 @@ Starting the tunnel revealed another difference between FreeBSD and Linux.
 ```
 
 Uh oh, `ifconfig` destroyed my wg0 interface immediately after creating it!
-Apparently, FreeBSD won't let me add a route that conflicts with an already active interface.
-Linux lets you create the link.
+Apparently, FreeBSD won't let me add a route that conflicts with one on another active interface.
+Linux lets you override the existing route.
 
-To set up a route for 192.168.1.0/24 (my home network subnet), I have to make sure I don't already have one.
-For now, I only need to get to the 10.2.0.10/24 subnet, so I removed the other one from the AllowedIPs parameter.
+I already had this route because I was setting WireGuard up _while connected to my home network_.
+Adding a route through the tunnel for the 192.168.1.0/24 subnet requires that I not already be on a network with that subnet.
+
+This configuration would work if I were on a different network (provided that it didn't also use that subnet), so, for now, I removed the home subnet from AllowedIPs.
 
 #### `/usr/local/etc/wireguard/wg0.conf`
 
