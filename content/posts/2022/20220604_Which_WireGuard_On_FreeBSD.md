@@ -13,7 +13,7 @@ I tried both to see which I should use.
 ### Setting Up Experimental In-Kernel Wireguard
 
 Let's start with the fun version.
-This port is the in-kernel version from zx2c4, written by Jason Donenfeld and Kyle Evans--not to be confused with the infamous Netgate-sponsored port that was yanked from FreeBSD 13.
+This port is the in-kernel version from zx2c4, written by Jason Donenfeld and Kyle Evans---not to be confused with the infamous Netgate-sponsored port that was yanked from FreeBSD 13.
 It's still under development and comes with disclaimers about using it in production.
 
 To use it, install the package and the userland tools to control it.
@@ -97,7 +97,7 @@ Linux lets you override the existing route.
 I already had this route because I was setting WireGuard up _while connected to my home network_.
 Adding a route through the tunnel for the 192.168.1.0/24 subnet requires that I not already be on a network with that subnet.
 
-This configuration would work if I were on a different network (provided that it didn't also use that subnet), so, for now, I removed the home subnet from AllowedIPs.
+This configuration would work if I were on a different network---provided that it didn't also use that subnet---so, for now, I removed the home subnet from AllowedIPs.
 
 #### `/usr/local/etc/wireguard/wg0.conf`
 
@@ -253,7 +253,7 @@ sy    cs    us sy id
 
 The number of system calls (`sy`) is the reason to have wireguard in the kernel instead of userland.
 The userland port made the most system calls to transfer the least data.
-The idle number (`id`) also shows a difference big enough for a user to notice; the in-kernel version uses a bit less CPU time overall.
+The idle number (`id`) also shows a difference big enough for a user to notice; the userland port eats up a bit more CPU time overall.
 
 ### On Linux?
 
