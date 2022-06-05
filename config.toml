@@ -10,7 +10,7 @@ enableInlineShortcodes = true
         style = "dracula"
 
 [params]
-    copyright = "Copyright © 2021 Benjamin Spiegel"
+    copyright = "Copyright © 2022 Benjamin Spiegel"
     dark = "auto"
     highlight = true
 
