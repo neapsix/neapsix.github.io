@@ -250,7 +250,8 @@ sy    cs    us sy id
 ````
 
 The number of system calls (`sy`) is the reason to have wireguard in the kernel instead of userland.
-The idle number (`id`) shows a difference big enough for a user to notice; the in-kernel version uses a bit less CPU time overall.
+The userland port made the most system calls to transfer the least data.
+The idle number (`id`) also shows a difference big enough for a user to notice; the in-kernel version uses a bit less CPU time overall.
 
 ### On Linux?
 
