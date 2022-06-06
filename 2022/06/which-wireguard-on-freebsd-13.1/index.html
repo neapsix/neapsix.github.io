@@ -34,7 +34,7 @@ I defined the <code>wg0</code> tunnel by creating <code>/usr/local/etc/wireguard
 </span></span><span style=display:flex><span>PublicKey = <span style=color:#6272a4># &lt;Gateway Server&#39;s Public Key Here&gt;</span>
 </span></span><span style=display:flex><span>AllowedIPs = <span style=color:#bd93f9>10.2</span>.<span style=color:#bd93f9>0.0</span>/<span style=color:#bd93f9>24</span>,<span style=color:#bd93f9>192.168</span>.<span style=color:#bd93f9>1.0</span>/<span style=color:#bd93f9>24</span>
 </span></span><span style=display:flex><span>PersistentKeepAlive = <span style=color:#bd93f9>25</span>
-</span></span></code></pre></div><p>Starting the tunnel revealed another difference between FreeBSD and Linux.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># wg-quick up wg0           
+</span></span></code></pre></div><p>Starting the tunnel revealed another difference between FreeBSD and Linux.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># wg-quick up wg0
 </span></span><span style=display:flex><span><span style=color:#44475a>[#] ifconfig wg create name wg0
 </span></span></span><span style=display:flex><span><span style=color:#44475a>[#] wg setconf wg0 /dev/stdin
 </span></span></span><span style=display:flex><span><span style=color:#44475a>[#] ifconfig wg0 inet 10.2.0.10/24 alias
@@ -46,9 +46,9 @@ I defined the <code>wg0</code> tunnel by creating <code>/usr/local/etc/wireguard
 </span></span></span><span style=display:flex><span><span style=color:#44475a>[#] ifconfig wg0 destroy
 </span></span></span></code></pre></div><p>Uh oh, <code>ifconfig</code> destroyed my wg0 interface immediately after creating it!
 Apparently, FreeBSD won&rsquo;t let me add a route that conflicts with one on another active interface.
-Linux lets you override the existing route.</p><p>I already had this route because I was setting WireGuard up <em>while connected to my home network</em>.
-Adding a route through the tunnel for the 192.168.1.0/24 subnet requires that I not already be on a network with that subnet.</p><p>This configuration would work if I were on a different network&mdash;provided that it didn&rsquo;t also use that subnet&mdash;so, for now, I removed the home subnet from AllowedIPs.</p><h4 id=usrlocaletcwireguardwg0conf><code>/usr/local/etc/wireguard/wg0.conf</code></h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>AllowedIPs = <span style=color:#bd93f9>10.2</span>.<span style=color:#bd93f9>0.0</span>/<span style=color:#bd93f9>24</span>
-</span></span></code></pre></div><p>That changed fixed the issue.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># wg-quick up wg0
+Linux lets me override the existing route.</p><p>I already had this route because I was setting WireGuard up <em>while connected to my home network</em>.
+Adding a route through the tunnel for 192.168.1.0/24 requires that I not already be on a network with that subnet.</p><p>This configuration would work if I were on a different network&mdash;provided that it didn&rsquo;t also use that subnet&mdash;so, for now, I removed the home subnet from AllowedIPs.</p><h4 id=usrlocaletcwireguardwg0conf><code>/usr/local/etc/wireguard/wg0.conf</code></h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-toml data-lang=toml><span style=display:flex><span>AllowedIPs = <span style=color:#bd93f9>10.2</span>.<span style=color:#bd93f9>0.0</span>/<span style=color:#bd93f9>24</span>
+</span></span></code></pre></div><p>That change fixed the issue.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># wg-quick up wg0
 </span></span><span style=display:flex><span><span style=color:#44475a>[#] ifconfig wg create name wg0
 </span></span></span><span style=display:flex><span><span style=color:#44475a>[#] wg setconf wg0 /dev/stdin
 </span></span></span><span style=display:flex><span><span style=color:#44475a>[#] ifconfig wg0 inet 10.2.0.10/24 alias
@@ -69,7 +69,7 @@ Adding a route through the tunnel for the 192.168.1.0/24 subnet requires that I 
 </span></span></span><span style=display:flex><span><span style=color:#44475a>  latest handshake: 30 seconds ago
 </span></span></span><span style=display:flex><span><span style=color:#44475a>  transfer: 92 B received, 212 B sent
 </span></span></span><span style=display:flex><span><span style=color:#44475a>  persistent keepalive: every 25 seconds
-</span></span></span></code></pre></div><p>The last thing to do is to enable the tunnel on startup.
+</span></span></span></code></pre></div><p>The last step is to enable the tunnel on startup.
 I suspected that wireguard-tools came with an <code>rc</code> script to do so.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>$ pkg info -l wireguard-tools
 </span></span><span style=display:flex><span><span style=color:#44475a>wireguard-tools-1.0.20210914_1:
 </span></span></span><span style=display:flex><span><span style=color:#44475a>	/usr/local/bin/wg
@@ -127,16 +127,15 @@ sy    cs    us sy id
 14908 41894  1 27 72
 13274 35634  2 27 71
 14110 37270  1 29 70
-</code></pre><p>The number of system calls (<code>sy</code>) is the reason to have wireguard in the kernel instead of userland.
-The userland port made the most system calls to transfer the least data.
-The idle number (<code>id</code>) also shows a difference big enough for a user to notice; the userland port eats up a bit more CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
+</code></pre><p>The number of system calls (the first <code>sy</code> column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
+That said, I&rsquo;d love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.</p><p>The idle number (<code>id</code>) also shows a enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec  1.09 GBytes   936 Mbits/sec    0   sender
 [  5]   0.00-10.00  sec  1.09 GBytes   934 Mbits/sec        receiver
 </code></pre><h4 id=wireguard-on-linux><code>wireguard</code> on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec   717 MBytes   601 Mbits/sec   78   sender
 [  5]   0.00-10.00  sec   715 MBytes   600 Mbits/sec        receiver
 </code></pre><h3 id=conclusions>Conclusions</h3><p>The goal of using WireGuard is to have a secure VPN connection with very little overhead.
-In this test, <code>wireguard-go</code> on FreeBSD doesn&rsquo;t really deliver that.
-If I were happy cutting network performance almost in half, I might as well use a different protocol.</p><p>On the other hand, <code>wireguard-kmod</code> clearly can perform better, even in casual use.
-It performs about as well as the real competition, WireGuard on Linux.
-Given that it&rsquo;s been over a year since the in-kernel WireGuard kerfuffle, I&rsquo;ll wager it&rsquo;s secure enough to use.</p></article></main><footer id=footer>Copyright © 2022 Benjamin Spiegel</footer></body></html>
+In this test, <code>wireguard-go</code> on FreeBSD doesn&rsquo;t really deliver that, even for casual use.
+If I were happy cutting network performance almost in half, I might as well use a different protocol.</p><p>Fortunately, <code>wireguard-kmod</code> performs much better.
+It even performs as well or better than the real competition, WireGuard on Linux.
+Of course, this port isn&rsquo;t done yet, but considering that it&rsquo;s been over a year since the in-kernel WireGuard kerfuffle, I&rsquo;ll wager that it&rsquo;s secure enough to use.</p></article></main><footer id=footer>Copyright © 2022 Benjamin Spiegel</footer></body></html>
