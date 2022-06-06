@@ -77,7 +77,7 @@ PersistentKeepAlive = 25
 Starting the tunnel revealed another difference between FreeBSD and Linux.
 
 ```console
-# wg-quick up wg0           
+# wg-quick up wg0
 [#] ifconfig wg create name wg0
 [#] wg setconf wg0 /dev/stdin
 [#] ifconfig wg0 inet 10.2.0.10/24 alias
@@ -92,10 +92,10 @@ Starting the tunnel revealed another difference between FreeBSD and Linux.
 
 Uh oh, `ifconfig` destroyed my wg0 interface immediately after creating it!
 Apparently, FreeBSD won't let me add a route that conflicts with one on another active interface.
-Linux lets you override the existing route.
+Linux lets me override the existing route.
 
 I already had this route because I was setting WireGuard up _while connected to my home network_.
-Adding a route through the tunnel for the 192.168.1.0/24 subnet requires that I not already be on a network with that subnet.
+Adding a route through the tunnel for 192.168.1.0/24 requires that I not already be on a network with that subnet.
 
 This configuration would work if I were on a different network---provided that it didn't also use that subnet---so, for now, I removed the home subnet from AllowedIPs.
 
@@ -105,7 +105,7 @@ This configuration would work if I were on a different network---provided that i
 AllowedIPs = 10.2.0.0/24
 ```
 
-That changed fixed the issue.
+That change fixed the issue.
 
 ```console
 # wg-quick up wg0
@@ -131,7 +131,7 @@ peer: <My gateway server's public key>
   persistent keepalive: every 25 seconds
 ```
 
-The last thing to do is to enable the tunnel on startup.
+The last step is to enable the tunnel on startup.
 I suspected that wireguard-tools came with an `rc` script to do so.
 
 ```console
@@ -249,11 +249,12 @@ sy    cs    us sy id
 14908 41894  1 27 72
 13274 35634  2 27 71
 14110 37270  1 29 70
-````
+```
 
-The number of system calls (`sy`) is the reason to have wireguard in the kernel instead of userland.
-The userland port made the most system calls to transfer the least data.
-The idle number (`id`) also shows a difference big enough for a user to notice; the userland port eats up a bit more CPU time overall.
+The number of system calls (the first `sy` column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
+That said, I'd love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.
+
+The idle number (`id`) also shows a enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.
 
 ### On Linux?
 
@@ -279,10 +280,9 @@ Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in 
 ### Conclusions
 
 The goal of using WireGuard is to have a secure VPN connection with very little overhead.
-In this test, `wireguard-go` on FreeBSD doesn't really deliver that.
+In this test, `wireguard-go` on FreeBSD doesn't really deliver that, even for casual use.
 If I were happy cutting network performance almost in half, I might as well use a different protocol.
 
-On the other hand, `wireguard-kmod` clearly can perform better, even in casual use.
-It performs about as well as the real competition, WireGuard on Linux.
-Given that it's been over a year since the in-kernel WireGuard kerfuffle, I'll wager it's secure enough to use.
-
+Fortunately, `wireguard-kmod` performs much better.
+It even performs as well or better than the real competition, WireGuard on Linux.
+Of course, this port isn't done yet, but considering that it's been over a year since the in-kernel WireGuard kerfuffle, I'll wager that it's secure enough to use.
