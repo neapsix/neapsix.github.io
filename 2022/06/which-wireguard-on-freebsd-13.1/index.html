@@ -128,7 +128,7 @@ sy    cs    us sy id
 13274 35634  2 27 71
 14110 37270  1 29 70
 </code></pre><p>The number of system calls (the first <code>sy</code> column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
-That said, I&rsquo;d love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.</p><p>The idle number (<code>id</code>) also shows a enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
+That said, I&rsquo;d love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.</p><p>The idle number (<code>id</code>) also shows enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec  1.09 GBytes   936 Mbits/sec    0   sender
 [  5]   0.00-10.00  sec  1.09 GBytes   934 Mbits/sec        receiver
 </code></pre><h4 id=wireguard-on-linux><code>wireguard</code> on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
