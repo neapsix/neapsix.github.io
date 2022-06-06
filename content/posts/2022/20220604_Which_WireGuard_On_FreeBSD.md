@@ -254,7 +254,7 @@ sy    cs    us sy id
 The number of system calls (the first `sy` column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
 That said, I'd love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.
 
-The idle number (`id`) also shows a enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.
+The idle number (`id`) also shows enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.
 
 ### On Linux?
 
