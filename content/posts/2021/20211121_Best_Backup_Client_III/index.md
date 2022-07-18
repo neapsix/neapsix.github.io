@@ -45,7 +45,7 @@ This table shows the size of the B2 bucket in gigabytes after each test.
 
 Duplicity was the most space-efficient across all tests. I considered the Touch test a tie between Duplicity and restic because the reported size wasn't precise enough to tell.
 
-The restic container takes up a little more space the Duplicity container, which matches what Gilbert Chen, the author of a competing product, found in [his benchmarks](https://github.com/gilbertchen/benchmarking). However, the difference is very small in this test, so I have to assume that the restic developers have the issue he saw back in 2017.
+The restic bucket takes up a little more space than the Duplicity bucket, which matches what Gilbert Chen, the author of a competing product, found in [his benchmarks](https://github.com/gilbertchen/benchmarking). However, the difference is very small in this test, so I have to assume that the restic developers have fixed the issue he saw back in 2017.
 
 ### Network Usage Results
 The following graphs show network usage over time in MiB (1024 bytes) per second. The file-based sync tools easily saturated my 30 mbit/s upload connection, but duplicity and restic either had other resource bottlenecks or chose to limit the upload rate.
@@ -80,7 +80,7 @@ This test shows a scenario where Rclone might be better than b2-sync. I touched 
 
 ![Data received](images/5-restore_netstat.svg)
 
-Duplicity used less bandwidth but took much longer to restore than the other applications. In a restore scenario, using less bandwidth is probably not a benefit. If you have to do a full restore, the goal is to get up and running quickly, not minimize disruption on the network.
+Duplicity used less bandwidth but took much longer to restore than the other applications. In a restore scenario, using less bandwidth is probably not a benefit. If you have to do a full restore, the goal is to get up and running quickly, not to minimize disruption on the network.
 
 ### Selected CPU and Memory Usage Results
 
@@ -94,12 +94,12 @@ The CPU and memory usage graphs for the initial backup might help explain why re
 
 Restic seems to use system resources in a more predictable way than the other applications. It uses a moderate amount of CPU and grabs a block of memory that stays consistent for the whole time it takes to run.
 
-I don't see this result as a drawback for restic, especially because it has tuneable options for IO and CPU priority. However, it's worth noting that the out-of-the-box configuration might not be what people expect if they're used to other applications.
+I don't see this result as a drawback for restic, especially because it has tuneable options for I/O and CPU priority. However, it's worth noting that the out-of-the-box configuration might not be what people expect if they're used to other applications.
 
 The CPU result for restic also differs from [Gilbert Chen's benchmarks](https://github.com/gilbertchen/benchmarking), so maybe the restic developers changed the CPU handling based on his comments. Either way, I don't fully agree with Chen's reasoning for preferring lower CPU—I think it depends—and it's worth noting that Chen's product stands to benefit if restic seems clunky.
 
 ### Conclusion
 
-You can implement a successful cloud backup strategy using any of these applications. Both Duplicity and restic have features that appeal to me: I like that Duplicity uses GPG for encryption, and I like that restic doesn't require periodic full backups. I'd like to try one or both of them on my production dataset.
+You can implement a successful cloud backup strategy using any of these applications. Both Duplicity and restic have features that appeal to me. I like that Duplicity uses GPG for encryption, and I like that restic doesn't require periodic full backups. I'd like to try one or both of them on my production dataset.
 
 One recommendation I can give: I found it very useful and interesting to do hands-on testing before trusting an application with my important data. If you found these articles helpful and want to recreate my tests, check out my GitHub repo here: [neapsix/cloudbackup-benchmarks](https://github.com/neapsix/cloudbackup-benchmarks).
