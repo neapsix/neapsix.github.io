@@ -45,7 +45,7 @@ However, I got an error when I loaded it by name.
 kldload: can't load if_wg: module already loaded or in kernel
 ```
 
-Checking whether the module is loaded gives us exit code 0 (success).
+Checking whether the module is loaded gave me exit code 0 (success).
 I guess it's loaded by default!
 
 ```console
@@ -190,7 +190,7 @@ Let's see if the slow userspace implementation is really all that slow.
 
 ### FreeBSD Wireguard Shootout
 
-As an unscientific test, I set up a tunnel between my laptop with FreeBSD 13.1 and my Raspberry Pi both connected to the same switch over gigabit ethernet.
+As an unscientific test, I set up a tunnel between my laptop with FreeBSD 13.1 and my Raspberry Pi with both connected to the same switch over gigabit ethernet.
 I ran `iperf3` to measure the throughput and `vmstat` to see CPU and memory usage.
 Here are the network throughput results.
 
@@ -251,10 +251,11 @@ sy    cs    us sy id
 14110 37270  1 29 70
 ```
 
-The number of system calls (the first `sy` column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
-That said, I'd love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.
+The number of system calls (the first `sy` column) is why we want WireGuard in the kernel instead of in userland; the userland version made more system calls to transfer less data.
+The user and system CPU time numbers (`us` and the second `sy`) reflect that difference.
+That said, I'd love to know why there were fewer system calls with in-kernel wireguard than with no tunnel at all.
 
-The idle number (`id`) also shows enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.
+The idle number (`id`) shows a small difference in unused CPU capacity. The in-kernel version eats up less CPU time overall.
 
 ### On Linux?
 
