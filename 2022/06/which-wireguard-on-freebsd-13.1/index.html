@@ -15,7 +15,7 @@ To find the name, I listed all the files installed by the package.</p><div class
 </span></span></span><span style=display:flex><span><span style=color:#44475a>	/usr/local/share/licenses/wireguard-kmod-0.0.20211105_1/catalog.mk
 </span></span></span></code></pre></div><p>However, I got an error when I loaded it by name.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># kldload if_wg
 </span></span><span style=display:flex><span><span style=color:#44475a>kldload: can&#39;t load if_wg: module already loaded or in kernel
-</span></span></span></code></pre></div><p>Checking whether the module is loaded gives us exit code 0 (success).
+</span></span></span></code></pre></div><p>Checking whether the module is loaded gave me exit code 0 (success).
 I guess it&rsquo;s loaded by default!</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># kldstat -q -n if_wg; <span style=color:#8be9fd;font-style:italic>echo</span> <span style=color:#8be9fd;font-style:italic>$?</span>
 </span></span><span style=display:flex><span><span style=color:#44475a>0
 </span></span></span></code></pre></div><p>Configuring, starting, and stopping tunnels works the same as on other platforms with <code>wireguard-tools</code>.
@@ -100,7 +100,7 @@ Configuring, starting, and stopping tunnels is handled by <code>wireguard-tools<
 </span></span></span></code></pre></div><p>This is a bit of a mixed message.
 With <code>wireguard-kmod</code>, I got a scary warning about it being experimental, but <code>wireguard-go</code> says it&rsquo;s OBE.
 I want to use the in-kernel version for better performance, but I also want security and stability.
-Let&rsquo;s see if the slow userspace implementation is really all that slow.</p><h3 id=freebsd-wireguard-shootout>FreeBSD Wireguard Shootout</h3><p>As an unscientific test, I set up a tunnel between my laptop with FreeBSD 13.1 and my Raspberry Pi both connected to the same switch over gigabit ethernet.
+Let&rsquo;s see if the slow userspace implementation is really all that slow.</p><h3 id=freebsd-wireguard-shootout>FreeBSD Wireguard Shootout</h3><p>As an unscientific test, I set up a tunnel between my laptop with FreeBSD 13.1 and my Raspberry Pi with both connected to the same switch over gigabit ethernet.
 I ran <code>iperf3</code> to measure the throughput and <code>vmstat</code> to see CPU and memory usage.
 Here are the network throughput results.</p><h4 id=baseline-no-tunnel>Baseline (No Tunnel)</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec  1.09 GBytes   935 Mbits/sec    0   sender
@@ -127,8 +127,9 @@ sy    cs    us sy id
 14908 41894  1 27 72
 13274 35634  2 27 71
 14110 37270  1 29 70
-</code></pre><p>The number of system calls (the first <code>sy</code> column) is why we want WireGuard in the kernel instead of in userland; the userland port made the most system calls to transfer the least data.
-That said, I&rsquo;d love to know why there were far fewer system calls with in-kernel wireguard than with no tunnel at all.</p><p>The idle number (<code>id</code>) also shows enough difference between the ports that a user might notice. The userland port eats up a bit more CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
+</code></pre><p>The number of system calls (the first <code>sy</code> column) is why we want WireGuard in the kernel instead of in userland; the userland version made more system calls to transfer less data.
+The user and system CPU time numbers (<code>us</code> and the second <code>sy</code>) reflect that difference.
+That said, I&rsquo;d love to know why there were fewer system calls with in-kernel wireguard than with no tunnel at all.</p><p>The idle number (<code>id</code>) shows a small difference in unused CPU capacity. The in-kernel version eats up less CPU time overall.</p><h3 id=on-linux>On Linux?</h3><p>Just for fun, I booted a live USB stick of Fedora Linux, which has WireGuard in the kernel, and tried the same test.</p><h4 id=baseline-no-tunnel-on-linux>Baseline (No Tunnel) on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
 [  5]   0.00-10.00  sec  1.09 GBytes   936 Mbits/sec    0   sender
 [  5]   0.00-10.00  sec  1.09 GBytes   934 Mbits/sec        receiver
 </code></pre><h4 id=wireguard-on-linux><code>wireguard</code> on Linux</h4><pre tabindex=0><code>[ ID] Interval           Transfer     Bitrate         Retr
