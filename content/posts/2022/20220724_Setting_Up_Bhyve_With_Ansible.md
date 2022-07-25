@@ -3,9 +3,8 @@ title: "Setting Up Bhyve with Ansible"
 date: 2022-07-24T00:00:00-06:00
 ---
 
-This weekend, I moved the system setup for my virtualization server into Ansible, and I got virtual machines up and running using `bhyve`.
-I hit a small bump when combining the two that I wanted to share.
-I also wanted to rave just a bit about my experience trying `bhyve`.
+This weekend, I moved the system setup for my virtualization server into Ansible, and I got virtual machines up and running with `bhyve`.
+I hit a small bump when combining the two that I wanted to share. I'd also like to rave a bit about my experience trying `bhyve`.
 It's amazing!
 
 <!--more-->
