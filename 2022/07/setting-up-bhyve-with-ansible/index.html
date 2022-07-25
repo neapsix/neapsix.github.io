@@ -1,0 +1,129 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=favicon.ico><link rel=stylesheet href=/css/style.min.css><title>Setting Up Bhyve with Ansible</title></head><body><header id=banner><h2><a href>neap space</a></h2><nav><ul><li><a href=/ title=posts>posts</a></li><li><a href=/about/ title=about>about</a></li></ul></nav></header><main id=content><article><header id=post-header><h1>Setting Up Bhyve with Ansible</h1><time>July 24, 2022</time></header><p>This weekend, I moved the system setup for my virtualization server into Ansible, and I got virtual machines up and running using <code>bhyve</code>.
+I hit a small bump when combining the two that I wanted to share.
+I also wanted to rave just a bit about my experience trying <code>bhyve</code>.
+It&rsquo;s amazing!</p><p>For background, I&rsquo;m migrating this server from sketchy and half-assed to maintainable and well planned out.
+I&rsquo;m also migrating it from Ubuntu to FreeBSD, but note that I&rsquo;m not trying to bash Ubuntu.
+The badness came from how I set it up, not from Ubuntu.</p><p>I had already installed FreeBSD and done some manual setup as a proof of concept.
+My goal was to automate what I did by recreating it with Ansible and then add the required setup to start running virtual machines with <code>bhyve</code>.</p><h3 id=new-machine-setup-with-ansible>New Machine Setup with Ansible</h3><p>It was pretty easy to recreate my basic setup for a new machine using Ansible.
+I created two playbooks.</p><p>The first playbook takes a fresh install with just my user, an ansible user, and <code>sshd</code>, and it bootstraps some prerequisites.
+It logs in, becomes root with <code>su</code>, and uses the raw command module to <code>pkg install python</code>.
+Without the Python interpreter, running raw commands is all Ansible can do.
+It then installs <code>sudo</code>, updates <code>sudoers</code>, and locks the root password.</p><p>The second playbook copies my authorized SSH keys and sets up a secure <code>sshd</code> config.
+I got some ideas from Michael W. Lucas&rsquo;s <a href=https://mwl.io/archives/1819>managing sshd with Ansible</a> blog post.
+However, note that the ansible syntax he uses is now out of date.
+Instead of <code>with_items</code>, you need <code>loop</code>.</p><h3 id=bhyve-setup-with-ansible><code>bhyve</code> Setup with Ansible</h3><p>After implementing my basic setup in Ansible, I started working on the steps needed to run virtual machines with <code>bhyve</code>.
+For this part, I followed the <a href=https://klarasystems.com/articles/from-0-to-bhyve-on-freebsd-13-1/>From 0 to Bhyve on FreeBSD 13.1</a> guide that Jim Salter wrote for Klara Systems.</p><p>I implemented the steps in the guide as a new Ansible playbook.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>- <span style=color:#ff79c6>name</span>: Set up bhyve
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>hosts</span>: freebsd
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>remote_user</span>: ansible
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>become</span>: <span style=color:#ff79c6>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#ff79c6>tasks</span>:
+</span></span><span style=display:flex><span>    <span style=color:#6272a4># Tasks go here!</span>
+</span></span></code></pre></div><p>For each step in the guide, I added a task. First, install the required packages:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>  <span style=color:#ff79c6>tasks</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: install bhyve packages
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>package</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>:
+</span></span><span style=display:flex><span>          - vm-bhyve
+</span></span><span style=display:flex><span>          - bhyve-firmware
+</span></span></code></pre></div><p>Create zfs datasets to hold VMs and templates:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create bhyve dataset
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>community.general.zfs</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>: zroot/bhyve
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>extra_zfs_properties</span>:
+</span></span><span style=display:flex><span>          <span style=color:#ff79c6>recordsize</span>: 64K
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create bhyve templates dataset
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>community.general.zfs</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>: zroot/bhyve/.templates
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span></code></pre></div><p>And enable services:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: enable bhyve service in rc.conf
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>community.general.sysrc</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>: vm_enable
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>value</span>: <span style=color:#f1fa8c>&#34;YES&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: set bhyve vm path in rc.conf
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>community.general.sysrc</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>: vm_dir
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>value</span>: <span style=color:#f1fa8c>&#34;zfs:zroot/bhyve&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: enable virtualization support in loader.conf
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>community.general.sysrc</span>:
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>name</span>: vmm_load
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>value</span>: <span style=color:#f1fa8c>&#34;YES&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>path</span>: /boot/loader.conf
+</span></span></code></pre></div><p>The next step was where I ran into trouble.
+To enable network access for the VMs, you can use the <code>vm-bhyve</code> utility to set up a virtual switch and attach a network interface.
+These commands are run just once.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># vm init 
+</span></span><span style=display:flex><span># vm switch create public 
+</span></span><span style=display:flex><span># vm switch add public &lt;your network interface&gt;
+</span></span></code></pre></div><p>That&rsquo;s easy enough to do in Ansible using the <code>command</code> module, but this approach creates a problem:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: initialize vm-bhyve
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: /usr/local/sbin/vm init
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: /usr/local/sbin/vm switch create public
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: attach interface to virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: 
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>cmd</span>: <span style=color:#f1fa8c>&#34;/usr/local/sbin/vm switch add public {{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
+</span></span></code></pre></div><p>The commands work just fine the first time.
+However, each time I add steps or change something in the declarative parts, I have to run the playbook again.
+When I do, Ansible does these run-once commands again.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span><span style=color:#44475a>TASK [initialize vm-bhyve] ****************************************************
+</span></span></span><span style=display:flex><span><span style=color:#44475a>changed: [vmhost]
+</span></span></span><span style=display:flex><span><span style=color:#44475a></span>
+</span></span><span style=display:flex><span><span style=color:#44475a>TASK [create virtual switch] **************************************************
+</span></span></span><span style=display:flex><span><span style=color:#44475a>fatal: [vmhost]: FAILED! =&gt; {&#34;changed&#34;: true, &#34;cmd&#34;: [&#34;/usr/local/sbin/vm&#34;, &#34;switch&#34;, &#34;create&#34;, &#34;public&#34;], &#34;delta&#34;: &#34;0:00:00.013700&#34;, &#34;end&#34;: &#34;2022-07-24 15:57:38.339834&#34;, &#34;msg&#34;: &#34;non-zero return code&#34;, &#34;rc&#34;: 1, &#34;start&#34;: &#34;2022-07-24 15:57:38.326134&#34;, &#34;stderr&#34;: &#34;/usr/local/sbin/vm: ERROR: switch public already exists&#34;, &#34;stderr_lines&#34;: [&#34;/usr/local/sbin/vm: ERROR: switch public already exists&#34;], &#34;stdout&#34;: &#34;&#34;, &#34;stdout_lines&#34;: []}
+</span></span></span><span style=display:flex><span><span style=color:#44475a></span>
+</span></span><span style=display:flex><span><span style=color:#44475a>PLAY RECAP ********************************************************************
+</span></span></span><span style=display:flex><span><span style=color:#44475a>vmhost          : ok=7    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+</span></span></span></code></pre></div><p>This time, the second command returns an error because the switch is already there.
+Ansible then halts halfway through with a failure, even though the error is not a problem.</p><p>All of the other tasks are <em>declarative</em>.
+You declare the end state you want, and Ansible either verifies that the machine is already there or does whatever is needed to get it there.
+However, these commands are <em>imperative</em>.
+You tell Ansible what steps to take, and it does them exactly.
+Either approach make sense, but mixing them is really awkward.</p><p>I could just log in and run the commands manually, but I didn&rsquo;t want to give up.
+Instead, I came up with two potential solutions.</p><h4 id=the-hard-way>The Hard Way</h4><p>The first thing I did was to look for an Ansible module to interact with the <code>vm-bhyve</code> utility with declarative tasks.
+I didn&rsquo;t find one, so, naturally, I decided to write one.
+I&rsquo;ve never written an Ansible module before, and I&rsquo;m not much of a Python developer, but after about six hours I had something that pretty much worked.</p><p>My <code>ansible-vmbhyve</code> module supports creating and destroying virtual switches and adding and removing interfaces.
+If you want to try it or contribute to it, you can find it on GitHub here: <a href=https://github.com/neapsix/ansible-vmbhyve>neapsix/ansible-vmbhyve</a>.</p><p>With this module, I could set up the virtual switch in declarative language without getting errors on subsequent runs:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch and attach interface
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>vm-bhyve</span>: /usr/local/sbin/vm init
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>switch</span>: public
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>state</span>: present
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>interfaces</span>: <span style=color:#f1fa8c>&#34;{{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
+</span></span></code></pre></div><p>Yay, it works!
+However, because this module has to be installed manually, it&rsquo;s no easier than running the commands manually or commenting them out after the first run.
+Fortunately, there&rsquo;s another way to fix the issue, at least until my half-baked module is ready for primetime.</p><h4 id=the-easy-way>The Easy Way</h4><p>Ansible supports some <a href=https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html>options for error handling</a> when a task fails.
+You can choose to ignore errors from a certain task and keep going even if it fails.
+To do so, add <code>ignore_errors: yes</code> to that task:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: /usr/local/sbin/vm switch create public
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ignore_errors</span>: <span style=color:#ff79c6>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: attach interface to virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: 
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>cmd</span>: <span style=color:#f1fa8c>&#34;/usr/local/sbin/vm switch add public {{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ignore_errors</span>: <span style=color:#ff79c6>yes</span>
+</span></span></code></pre></div><p>I didn&rsquo;t love that option, though.
+I do want the playbook to fail if there&rsquo;s an errors <em>the first time</em>.
+To make that happen, you can change what Ansible considers a failure.
+I set the <code>failed_when</code> option to consider the task a failure if the command returns an error, just not this particular error.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: /usr/local/sbin/vm switch create public
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>register</span>: result
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>failed_when</span>: &gt;<span style=color:#f1fa8c>
+</span></span></span><span style=display:flex><span><span style=color:#f1fa8c>        (result.stderr != &#39;&#39;) and
+</span></span></span><span style=display:flex><span><span style=color:#f1fa8c>        (&#34;ERROR: switch public already exists&#34; not in result.stderr)</span>        
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: attach interface to virtual switch
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: 
+</span></span><span style=display:flex><span>        <span style=color:#ff79c6>cmd</span>: <span style=color:#f1fa8c>&#34;/usr/local/sbin/vm switch add public {{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>register</span>: result
+</span></span><span style=display:flex><span>      <span style=color:#ff79c6>failed_when</span>: &gt;<span style=color:#f1fa8c>
+</span></span></span><span style=display:flex><span><span style=color:#f1fa8c>        (result.stderr != &#39;&#39;) and
+</span></span></span><span style=display:flex><span><span style=color:#f1fa8c>        (&#34;ERROR: failed to add member igb0 to the virtual switch public&#34; not in result.stderr)</span>        
+</span></span></code></pre></div><p>Ansible now passes these tasks with a result of <code>changed: [vmhost]</code>.</p><p>One caveat: the <code>vm switch add</code> command gives only a generic &ldquo;failed to add&rdquo; message instead of a specific &ldquo;already exists&rdquo; message.
+I assume it returns the same error when it fails for any reason, so there&rsquo;s no benefit to defining <code>failed_when</code> over <code>ignore_errors</code> for this command.</p><h3 id=conclusion-and-plug>Conclusion and Plug</h3><p>When I finished this setup, I created a Ubuntu 22.04 VM to test it out, and I was shocked at how easy it was.
+Right out of the box, my VM had networking, internet access, and its own IP address.
+It could even run Docker containers.
+I expected to have to mess around with NAT and bridging, but <code>vm-bhyve</code> did it all for me.</p><p>If you use VMs and you haven&rsquo;t used <code>bhyve</code>, I highly recommend you try it.
+It&rsquo;s gained a ton of features since I first looked at it a few years ago, and <code>vm-bhyve</code> makes setting up VMs quick and comfy.</p><p>I&rsquo;m so excited and grateful to have these tools on FreeBSD, and I can&rsquo;t wait to do more with them!</p></article></main><footer id=footer>Copyright © 2022 Benjamin Spiegel</footer></body></html>
