@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: Cloud Backup for Slow Connections, Part I"
+title: "Cloud Backup for NAS Shootout, Part I"
 date: 2021-04-05T00:00:00-06:00
 ---
 In case further proof were needed, last month's story about the companies that lost irreplaceable data in [a literal towering inferno](https://www.polygon.com/22323078/rust-facepunch-fire-eu-datacenters) proves again that everyone with important files needs offsite backups.

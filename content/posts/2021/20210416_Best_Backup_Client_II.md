@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: Cloud Backup for Slow Connections, Part II"
+title: "Cloud Backup for NAS Shootout, Part II"
 date: 2021-04-16T00:00:00-06:00
 ---
 
