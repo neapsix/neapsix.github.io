@@ -33,7 +33,7 @@ Instead of `with_items`, you need `loop`.
 
 ### `bhyve` Setup with Ansible
 
-After implementing my basic setup in Ansible, I started working on the steps needed to run virtual machines with `bhyve`.
+After implementing my basic setup in Ansible, I started working on the setup to run virtual machines with `bhyve`.
 For this part, I followed the [From 0 to Bhyve on FreeBSD 13.1](https://klarasystems.com/articles/from-0-to-bhyve-on-freebsd-13-1/) guide that Jim Salter wrote for Klara Systems.
 
 I implemented the steps in the guide as a new Ansible playbook.
@@ -123,8 +123,7 @@ That's easy enough to do in Ansible using the `command` module, but this approac
 ```
 
 The commands work just fine the first time.
-However, each time I add steps or change something in the declarative parts, I have to run the playbook again.
-When I do, Ansible does these run-once commands again.
+However, each time I change something and re-run the playbook, Ansible does these run-once commands again.
 
 ```console
 TASK [initialize vm-bhyve] ****************************************************
@@ -151,7 +150,7 @@ Instead, I came up with two potential solutions.
 
 #### The Hard Way
 
-The first thing I did was to look for an Ansible module to interact with the `vm-bhyve` utility with declarative tasks.
+The first thing I did was to look for an Ansible module to interact with the `vm-bhyve` utility in a declarative way.
 I didn't find one, so, naturally, I decided to write one.
 I've never written an Ansible module before, and I'm not much of a Python developer, but after about six hours I had something that pretty much worked.
 
