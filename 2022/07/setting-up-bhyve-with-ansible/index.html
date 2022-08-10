@@ -103,7 +103,7 @@ To do so, add <code>ignore_errors: yes</code> to that task:</p><div class=highli
 </span></span><span style=display:flex><span>        <span style=color:#ff79c6>cmd</span>: <span style=color:#f1fa8c>&#34;/usr/local/sbin/vm switch add public {{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
 </span></span><span style=display:flex><span>      <span style=color:#ff79c6>ignore_errors</span>: <span style=color:#ff79c6>yes</span>
 </span></span></code></pre></div><p>I didn&rsquo;t love that option, though.
-I do want the playbook to fail if there&rsquo;s an errors <em>the first time</em>.
+I do want the playbook to fail if there&rsquo;s an error <em>the first time</em>.
 To make that happen, you can change what Ansible considers a failure.
 I set the <code>failed_when</code> option to consider the task a failure if the command returns an error, just not this particular error.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch
 </span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: /usr/local/sbin/vm switch create public
