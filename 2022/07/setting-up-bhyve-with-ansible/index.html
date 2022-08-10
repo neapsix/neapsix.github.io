@@ -10,7 +10,7 @@ Without the Python interpreter, running raw commands is all Ansible can do.
 It then installs <code>sudo</code>, updates <code>sudoers</code>, and locks the root password.</p><p>The second playbook copies my authorized SSH keys and sets up a secure <code>sshd</code> config.
 I got some ideas from Michael W. Lucas&rsquo;s <a href=https://mwl.io/archives/1819>managing sshd with Ansible</a> blog post.
 However, note that the ansible syntax he uses is now out of date.
-Instead of <code>with_items</code>, you need <code>loop</code>.</p><h3 id=bhyve-setup-with-ansible><code>bhyve</code> Setup with Ansible</h3><p>After implementing my basic setup in Ansible, I started working on the steps needed to run virtual machines with <code>bhyve</code>.
+Instead of <code>with_items</code>, you need <code>loop</code>.</p><h3 id=bhyve-setup-with-ansible><code>bhyve</code> Setup with Ansible</h3><p>After implementing my basic setup in Ansible, I started working on the setup to run virtual machines with <code>bhyve</code>.
 For this part, I followed the <a href=https://klarasystems.com/articles/from-0-to-bhyve-on-freebsd-13-1/>From 0 to Bhyve on FreeBSD 13.1</a> guide that Jim Salter wrote for Klara Systems.</p><p>I implemented the steps in the guide as a new Ansible playbook.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>- <span style=color:#ff79c6>name</span>: Set up bhyve
 </span></span><span style=display:flex><span>  <span style=color:#ff79c6>hosts</span>: freebsd
 </span></span><span style=display:flex><span>  <span style=color:#ff79c6>remote_user</span>: ansible
@@ -68,8 +68,7 @@ These commands are run just once.</p><div class=highlight><pre tabindex=0 style=
 </span></span><span style=display:flex><span>      <span style=color:#ff79c6>ansible.builtin.command</span>: 
 </span></span><span style=display:flex><span>        <span style=color:#ff79c6>cmd</span>: <span style=color:#f1fa8c>&#34;/usr/local/sbin/vm switch add public {{ ansible_facts[&#39;default_ipv4&#39;][&#39;interface&#39;] }}&#34;</span>
 </span></span></code></pre></div><p>The commands work just fine the first time.
-However, each time I add steps or change something in the declarative parts, I have to run the playbook again.
-When I do, Ansible does these run-once commands again.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span><span style=color:#44475a>TASK [initialize vm-bhyve] ****************************************************
+However, each time I change something and re-run the playbook, Ansible does these run-once commands again.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span><span style=color:#44475a>TASK [initialize vm-bhyve] ****************************************************
 </span></span></span><span style=display:flex><span><span style=color:#44475a>changed: [vmhost]
 </span></span></span><span style=display:flex><span><span style=color:#44475a></span>
 </span></span><span style=display:flex><span><span style=color:#44475a>TASK [create virtual switch] **************************************************
@@ -83,7 +82,7 @@ You declare the end state you want, and Ansible either verifies that the machine
 However, these commands are <em>imperative</em>.
 You tell Ansible what steps to take, and it does them exactly.
 Either approach make sense, but mixing them is really awkward.</p><p>I could just log in and run the commands manually, but I didn&rsquo;t want to give up.
-Instead, I came up with two potential solutions.</p><h4 id=the-hard-way>The Hard Way</h4><p>The first thing I did was to look for an Ansible module to interact with the <code>vm-bhyve</code> utility with declarative tasks.
+Instead, I came up with two potential solutions.</p><h4 id=the-hard-way>The Hard Way</h4><p>The first thing I did was to look for an Ansible module to interact with the <code>vm-bhyve</code> utility in a declarative way.
 I didn&rsquo;t find one, so, naturally, I decided to write one.
 I&rsquo;ve never written an Ansible module before, and I&rsquo;m not much of a Python developer, but after about six hours I had something that pretty much worked.</p><p>My <code>ansible-vmbhyve</code> module supports creating and destroying virtual switches and adding and removing interfaces.
 If you want to try it or contribute to it, you can find it on GitHub here: <a href=https://github.com/neapsix/ansible-vmbhyve>neapsix/ansible-vmbhyve</a>.</p><p>With this module, I could set up the virtual switch in declarative language without getting errors on subsequent runs:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>    - <span style=color:#ff79c6>name</span>: create virtual switch and attach interface
