@@ -189,7 +189,7 @@ To do so, add `ignore_errors: yes` to that task:
 ```
 
 I didn't love that option, though.
-I do want the playbook to fail if there's an errors *the first time*.
+I do want the playbook to fail if there's an error *the first time*.
 To make that happen, you can change what Ansible considers a failure.
 I set the `failed_when` option to consider the task a failure if the command returns an error, just not this particular error.
 
