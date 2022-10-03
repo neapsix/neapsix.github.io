@@ -12,6 +12,8 @@ Note that the built-in jail management tools described here are a little basic.
 Programs like `iocage` and `bastille` make this process much easier.
 I decided to write about making thin jails from scratch to better understand how they work before I try to automate them.
 
+## Why Use Thin Jails?
+
 To run an application in a jail, create a jail and install a copy of the FreeBSD system, sans kernel, into it.
 You can then use the jail as though it were its own machine with its own configuration, packages, and data.
 However, each jail contains duplicate copy of a standard FreeBSD system and needs duplicate chores to maintain it.
