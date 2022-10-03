@@ -131,7 +131,6 @@ However, it's better to build the directory structure within a subdirectory and 
 With this setup, the thin jail files are cordoned off from the base jail files in the resulting union filesystem.
 
 Back in the base jail, create a "skeleton" directory structure to mount the template into.
-Make a snapshot when you're done.
 
 ```console
 # cd /usr/local/jails/base/13.1-RELEASE-base
