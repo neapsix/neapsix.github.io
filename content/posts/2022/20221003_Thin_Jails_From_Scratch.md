@@ -168,7 +168,7 @@ etc@            net/            sys@
 
 ### Clone the Template and Mount Base and Thin Jails Together
 
-We're ready to create a thin jail using on this base jail and template.
+We're ready to create a thin jail using this base jail and template.
 First, clone the thin jail template to a new directory for the thin jail's persistent data.
 Note that I'm not using `zfs clone` for this step as some other guides online do.
 I'm not sure I see the benefit to having each thin jail dataset linked as a clone to the template dataset.
@@ -279,7 +279,7 @@ Verify that the jail is running and get its ID.
 
 Start a shell in the jail to check that the filesystems are present and mounted correctly.
 You shouldn't be able to edit files in the immutable part of the jail.
-You should in in the writable part.
+You should in the writable part.
 
 ```console
 # jexec 6
