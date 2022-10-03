@@ -3,12 +3,14 @@ title: "Artisanal Thin Jails from Scratch on FreeBSD"
 date: 2022-10-03T00:00:00-06:00
 ---
 
-More about FreeBSD virtualization with jails, the native system for running applications in isolated containers. 
+More about FreeBSD virtualization, this time with jails, the native system for running applications in isolated containers. 
 This article walks through how to manually set up jails that share an immutable base for common files.
 
 <!--more-->
 
-Note that the built-in jail management tools are a little basic. Programs like `iocage` and `bastille` make this process much easier. I wrote this article becuase I wanted to be comfortable creating and and and troubleshooting jails on my own before automating them.
+Note that the built-in jail management tools described here are a little basic.
+Programs like `iocage` and `bastille` make this process much easier.
+I decided to write about making thin jails from scratch to better understand how they work before I try to automate them.
 
 To run an application in a jail, create a jail and install a copy of the FreeBSD system, sans kernel, into it.
 You can use the jail as though it were its own machine with its own configuration, packages, and data.
