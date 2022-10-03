@@ -20,7 +20,6 @@ The basic procedure is to make an empty directory, mount the base jail's filesys
 
 For comparison, Docker on Linux lets you separate persistent data and configuration from the system image using bind mounts.
 Jails can do something similar using the `nullfs` tool built into FreeBSD to layer filesystems on top of each other.
-The built-in jail management tools are a little basic, but I wanted to know how to set up jails manually before trying something like `iocage` or `bastille`.
 
 Usual disclaimer that I'm not trying to say that jails or Docker containers are better.
 They're different tools, and both have benefits and drawbacks.
