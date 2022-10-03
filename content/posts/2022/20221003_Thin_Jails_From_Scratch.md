@@ -13,15 +13,16 @@ Programs like `iocage` and `bastille` make this process much easier.
 I decided to write about making thin jails from scratch to better understand how they work before I try to automate them.
 
 To run an application in a jail, create a jail and install a copy of the FreeBSD system, sans kernel, into it.
-You can use the jail as though it were its own machine with its own configuration, packages, and data.
-However, with multiple jails, you have duplicate copies of a standard FreeBSD system and duplicate chores to maintain them all.
+You can then use the jail as though it were its own machine with its own configuration, packages, and data.
+However, each jail contains duplicate copy of a standard FreeBSD system and needs duplicate chores to maintain it.
 
-You can avoid duplicating the whole system by creating thin jails containing just the unique files, like packages and service-specific configurations.
-All thin jails point to a single, shared base jail containing system files and other files common to all your jails.
-The basic procedure is to make an empty directory, mount the base jail's filesystem in it as read-only, and mount the unique files over it as a writable layer.
+You can avoid duplicating the whole system by creating thin jails with only the unique files, like packages, application-specific configuration, and user data.
+All your thin jails point to a single, shared base jail with system files and everything else that's the same from jail to jail.
+The basic procedure to create a thin jail is to make an empty directory, mount the base jail's filesystem in it as read-only, and mount the thin jail's unique files over it as a writable layer.
 
-For comparison, Docker on Linux lets you separate persistent data and configuration from the system image using bind mounts.
-Jails can do something similar using the `nullfs` tool built into FreeBSD to layer filesystems on top of each other.
+This approach makes it easier to update or replace the system image for a container, because it keeps the application or user's data separate from the vanilla system files that can be recreated any time.
+Thin jails use the `nullfs` tool built into FreeBSD to layer filesystems on top of each other.
+For comparison, Docker on Linux does somthing similar by using bind mounts to layer a file or directory on top of a disposable system image.
 
 Usual disclaimer that I'm not trying to say that jails or Docker containers are better.
 They're different tools, and both have benefits and drawbacks.
@@ -33,14 +34,13 @@ To create artisanal thin jails by hand, you need to:
 1. Create a base jail.
 1. Create a template for your thin jails.
 1. Move files you want to be jail-specific from the base jail to the thin jail template.
-1. In the base jail, create a skeleton directory structure to mount thin jails over.
+1. In the base jail, create a skeleton directory structure to mount a thin jail over.
 1. Clone the thin jail template and mount the base jail and thin jail together into a mountpoint directory.
-1. Configure the host to start your thin jail automatically.
+1. Configure the host to start the combined jail automatically.
 
 ### Create a Base Jail
 
 Make a new ZFS dataset and install the jail there, as described [in the FreeBSD Handbook](https://docs.freebsd.org/en/books/handbook/jails/#jails-build).
-Make a snapshot of the base jail when you're done.
 
 ```console
 # zfs create -o mountpoint=/usr/local/jails zroot/jails
@@ -65,7 +65,7 @@ boot/           home@           mnt/            root/           usr/
 dev/            lib/            net/            sbin/           var/
 ```
 
-Start the base jail with the four required arguments: directory, hostname, IP address, and command.
+To verify that it works, start the base jail with the four required arguments: directory, hostname, IP address, and command.
 
 ```console
 # jail -c path=/usr/local/jails/base/13.1-RELEASE-base \
@@ -86,7 +86,7 @@ So far, so good.
 
 ### Create a Thin Jail Template
 
-Next, create a template for the writeable part of the jail.
+Next, create a template for the thin jail, the writeable part of the jail that contains files specific to one jail.
 
 ```console
 # zfs create -p zroot/jails/base/13.1-RELEASE-template
@@ -94,7 +94,7 @@ Next, create a template for the writeable part of the jail.
 
 Determine which files and directories should be jail-specific.
 Remove them from the base jail and move them to the template.
-I chose directories for configuration files, installed ports, home directories, and directories for dynamic data like log files.
+I chose all directories for configuration files, installed ports, user homes, and dynamic data like log files.
 
 ```console
 # cd /usr/local/jails/base/13.1-RELEASE-base
@@ -114,7 +114,7 @@ I chose directories for configuration files, installed ports, home directories, 
 # unset TEMPLATE
 ```
 
-The file `/var/empty` doesn't get deleted when you move `/var`, so you need an extra command to remove it manually.
+You need the extra `chflags` command because the file `/var/empty` doesn't get deleted when you move `/var`.
 
 Make a snapshot of the template when you're done.
 This directory is the gold master for your future thin jails.
@@ -125,11 +125,11 @@ This directory is the gold master for your future thin jails.
 
 ### Create a Skeleton Directory Structure to Mount Thin Jails Over
 
-To mount a thin jail over your base jail, you need empty directories to mount the thin jail directories into.
+To mount a thin jail over your base jail, you need a tree of empty directories to mount the thin jail directories into.
 For example, if you mount the `basejail` filesystem and try to mount `thinjail/etc` over it, the `mount` command returns an error if there isn't an empty directory called `basejail/etc`.
 
 You could create empty directories in your base jail where the thin jail directories used to be.
-However, it's better to build the directory structure within a subdirectory and create symlinks into that subdirectory for `etc`, `usr`, `var`, and so on.
+However, it's better to build the directory structure within a subdirectory and make symlinks into that subdirectory for `etc`, `usr`, `var`, and so on.
 With this setup, the thin jail files are cordoned off from the base jail files in the resulting union filesystem.
 
 Back in the base jail, create a "skeleton" directory structure to mount the template into.
@@ -170,8 +170,8 @@ etc@            net/            sys@
 
 ### Clone the Template and Mount Base and Thin Jails Together
 
-We're ready to create a thin jail using this base jail and template.
-First, clone the thin jail template to a new directory for the thin jail's persistent data.
+You're ready to create a thin jail using this base jail and template.
+First, create the thin jail by cloning the thin jail template to a new directory.
 Note that I'm not using `zfs clone` for this step as some other guides online do.
 I'm not sure I see the benefit to having each thin jail dataset linked as a clone to the template dataset.
 
@@ -179,14 +179,16 @@ I'm not sure I see the benefit to having each thin jail dataset linked as a clon
 # zfs send zroot/jails/base/13.1-RELEASE-template@gold | zfs receive zroot/jails/thinjail0/data
 ```
 
-And create the mountpoint location where the two parts of the jail will be mounted:
+Next, create the mountpoint location where the two parts of the jail will be mounted:
 
 ```console
 # zfs create zroot/jails/.mountpoints; mkdir /usr/local/jails/.mountpoints/thinjail0
 ```
 
-Each thin jail needs an `fstab` file with instructions to layer the thin jail on top of the read-only base jail.
+Each thin jail also needs an `fstab` file with instructions to layer the thin jail on top of the read-only base jail.
 Create the file `/usr/local/jails/thinjail0/fstab` as follows:
+
+#### `fstab`
 
 ```fstab
 /usr/local/jails/base/13.1-RELEASE-base  /usr/local/jails/.mountpoints/thinjail0  nullfs  ro  0   0
@@ -217,7 +219,7 @@ usr/
           - home/
           - usr/
           [...]
-      thinjail0/                <- Jail-specific data
+      thinjail0/                <- Writable jail-specific data
         - data/
           - etc/
           - home/
@@ -280,7 +282,7 @@ Verify that the jail is running and get its ID.
 ```
 
 Start a shell in the jail to check that the filesystems are present and mounted correctly.
-You shouldn't be able to edit files in the immutable part of the jail.
+You shouldn't be able to edit files in the read-only part of the jail.
 You should in the writable part.
 
 ```console
@@ -320,39 +322,50 @@ devfs on /usr/local/jails/.mountpoints/thinjail0/dev (devfs)
 
 ## Caveats and Follow-Ups
 
+On the whole, the from-scratch approach is probably too much work. 
+I plan to write another article on using automated jail management tools.
+
+I also ran into a few quirks and limitations while testing these steps.
+Here are some notes that might save you some time.
+
+### Why Not to Use `jail.conf.d`
+
 I tried splitting my `jail.conf` file so that `/etc/jail.conf` defined default options, and each jail got its own file in `/etc/jail.conf.d`.
 Unfortunately, there are two limitations that make `/etc/jail.conf.d` a lot less useful:
 
-- The jail init script reads files in `/etc/jail.conf.d` only if you also list the name of the jail in `rc.conf`, like `jail_list="thinjail0`. More details [here](https://cgit.freebsd.org/src/commit/?id=7955efd574b9).
+- The jail init script reads files in `/etc/jail.conf.d` only if you also list the name of the jail in `rc.conf`, like `jail_list="thinjail0`.
+  If you define the jails directly in `/etc/jail.conf`, you can start everything with just `jail_enable="YES"`. More details [here](https://cgit.freebsd.org/src/commit/?id=7955efd574b9).
 - Files in `/etc/jail.conf.d` don't check for global settings in the main `jail.conf` file.
   So, if you separate jail configs into multiple files, you have to repeat the global settings in every single file.
   Which defeats the purpose of global settings.
 
-I also tried keeping my `jail.conf` file alongside all my other jail files and symlinking it to `/etc/jail.conf`, but doing that led to this error when starting the jail.
+### You Can't Use a Symlink for `/etc/jail.conf`
+
+I also tried keeping my `jail.conf` file alongside all my other jail files and making `/etc/jail.conf` a symlink to that file, but that led to this error when starting a jail.
 
 ```console
 Starting jails:jail: /etc/jail.conf: Too many levels of symbolic links
 ```
 
-Not a big deal, but it would be nice if the jail system could work with a symlinked config file.
+This limitation isn't a big deal, it would be nice if the jail system could follow a symlink to the config file.
+
+### Thin Jail Mountpoints
 
 In case you're wondering, the separate `.mountpoints/thinjail0` directory is necessary.
 I tried mounting the base jail into the thin jail's directory and mounting the thin jail again over top of it.
 That almost worked, but the thin jail data was read-only.
 It's obvious why, in retrospect--I couldn't write to it because the base jail was covering those files up.
 
-I plan to write another article on making thin jails in a _much_ simpler way using automated jail management tools.
-
 ## References
 
-I can't take credit for much of this work.
-Others already did the hard work of figuring out how to create thin jails.
-That said, I hope I was able to advance the conversation a bit by pulling together different sources, using friendlier naming conventions, and validating the steps in 2022.
+I can't take credit for most of the steps in this article.
+Others already did the hard work of figuring them out.
+That said, I hope this article advances the conversation a bit by pulling together different sources, validating the steps in 2022, and using friendlier naming conventions.
 
 Thanks and credit to the authors of the following articles:
 
 - <https://jacob.ludriks.com/2017/06/07/FreeBSD-Thin-Jails/> (Jacob Ludriks)
-- <https://clinta.github.io/freebsd-jails-the-hard-way/> - I gather that the excellent article above draws from this one
+- <https://clinta.github.io/freebsd-jails-the-hard-way/> - I gather that the article above draws from this one
 - <https://docs.freebsd.org/en/books/handbook/jails/#jails-application> (FreeBSD Docs Project) - for a cryptic but effective directory layout
 - <https://srobb.net/nullfsjail.html> - for a seemingly simpler approach using unionfs
 - <https://forums.freebsd.org/threads/thin-jail-woes.54530/> - for warning me off the unionfs approach
