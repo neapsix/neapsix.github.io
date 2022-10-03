@@ -313,9 +313,9 @@ I recommend leaving this parameter as is, but just to test, I tried setting `enf
 Now, `mount` returns everything we specified in the `fstab` and `jail.conf` files, as expected:
 
 ```console
-/usr/local/jails/templates/base/13.1-RELEASE-base on /usr/local/jails/.thinpool/thinjail0 (nullfs, local, noatime, read-only, nfsv4acls)
-/usr/local/jails/thinjail0 on /usr/local/jails/.thinpool/thinjail0/skeleton (nullfs, local, noatime, nfsv4acls)
-devfs on /usr/local/jails/.thinpool/thinjail0/dev (devfs)
+/usr/local/jails/base/13.1-RELEASE-base on /usr/local/jails/.mountpoints/thinjail0 (nullfs, local, noatime, read-only, nfsv4acls)
+/usr/local/jails/thinjail0/data on /usr/local/jails/.mountpoints/thinjail0/skeleton (nullfs, local, noatime, nfsv4acls)
+devfs on /usr/local/jails/.mountpoints/thinjail0/dev (devfs)
 ```
 
 ## Caveats and Follow-Ups
